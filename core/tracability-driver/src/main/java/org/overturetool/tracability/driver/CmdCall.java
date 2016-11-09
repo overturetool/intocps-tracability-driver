@@ -10,7 +10,7 @@ import java.util.Vector;
 /**
  * Created by kel on 04/11/16.
  */
-public  class CmdCall
+public class CmdCall
 {
 
 	public static List<String> call(File workingDir, String... args)
@@ -23,24 +23,46 @@ public  class CmdCall
 		pb.directory(workingDir);
 		Process p = pb.start();
 
-
-		if(p.waitFor()==0)
+		Thread t = new Thread(() ->
 		{
-			BufferedReader reader = new BufferedReader(new InputStreamReader(p.getInputStream()));
-			String line = null;
-			while ((line = reader.readLine ()) != null) {
-				output.add(line);
+			{
+				BufferedReader reader = new BufferedReader(new InputStreamReader(p.getErrorStream()));
+				String line = null;
+				try
+				{
+					while ((line = reader.readLine()) != null)
+					{
+						System.err.println(line);
+					}
+				} catch (IOException e)
+				{
+					e.printStackTrace();
+				}
 			}
-		}else
+
+		});
+		t.setDaemon(true);
+		t.start();
+
+		BufferedReader readerOut = new BufferedReader(new InputStreamReader(p.getInputStream()));
+		String lineOut;
+		while ((lineOut = readerOut.readLine()) != null)
+		{
+			output.add(lineOut);
+		}
+
+		if (p.waitFor() == 0)
+		{
+		} else
 		{
 			BufferedReader reader = new BufferedReader(new InputStreamReader(p.getErrorStream()));
-			String line = null;
-			while ((line = reader.readLine ()) != null) {
+			String line;
+			while ((line = reader.readLine()) != null)
+			{
 				System.err.println(line);
 			}
 			return null;
 		}
-
 
 		return output;
 	}
