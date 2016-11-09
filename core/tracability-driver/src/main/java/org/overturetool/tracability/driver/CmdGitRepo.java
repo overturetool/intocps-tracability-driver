@@ -5,6 +5,7 @@ import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.URLEncoder;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -63,7 +64,9 @@ public class CmdGitRepo implements  IGitRepo
 		{
 			case github:
 				fetchRemote();
-				final String rawGithubUrl = "https://github.com/%s/%s/blob/%s/%s";
+//				final String rawGithubUrl = "https://github.com/%s/%s/blob/%s/%s";
+				final String rawGithubUrl = "https://raw.githubusercontent.com/%s/%s/%s/%s";
+				//https://raw.githubusercontent.com/into-cps/case-study_single_watertank/1845462e5842b9f9ee01d528599c6be178e84cad/.project.json
 				//https://github.com/overturetool/vdm2c/blob/18c8de3d9302410a9f152bca05b8ea553ef6e890/c/pom.xml
 				if(remote==null || !remote.contains("github.com:"))
 				{
@@ -80,7 +83,18 @@ public class CmdGitRepo implements  IGitRepo
 				user = user.substring(0,user.indexOf("/"));
 				repo = repo.substring(0,repo.indexOf(".git"));
 
-				return String.format(rawGithubUrl, user, repo, repoCtxt.getCommit(), path);
+				String encodedPath = "";
+				for (String s : path.split("/"))
+				{
+					encodedPath+="/"+s.replace(" ","%20");//+URLEncoder.encode(s,"utf8");
+				}
+
+				if(encodedPath.length()>0)
+				{
+					encodedPath = encodedPath.substring(1);
+				}
+
+				return String.format(rawGithubUrl, user, repo, repoCtxt.getCommit(), encodedPath);
 			case gitlab:
 				fetchRemote();
 				break;
@@ -95,7 +109,7 @@ public class CmdGitRepo implements  IGitRepo
 	@Override public String getGitCheckSum(IGitRepoContext repoCtxt,
 			String path) throws IOException, InterruptedException
 	{
-		List<String> refs = CmdCall.call(repoPath, "git", "ls-tree", "-r", repoCtxt.getCommit());
+		List<String> refs = CmdCall.call(repoPath, "git", "--no-pager","ls-tree", "-r", repoCtxt.getCommit());
 
 		for (String output : refs)
 		{

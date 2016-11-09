@@ -11,6 +11,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.text.*;
+import java.util.Arrays;
 import java.util.Properties;
 
 public class Main
@@ -42,6 +43,9 @@ public class Main
 
 		Option schemeOpt = Option.builder("scheme").hasArg().numberOfArgs(1).argName("github> or <gitlab> or <intocps>").desc("Specify the URL scheme to use.").build();
 
+		Option excludePathPrefixOpt = Option.builder("exclude").hasArg().numberOfArgs(1).argName("path prefix").desc("Prefix of path to exclude.").build();
+
+
 		Option syncOpt = Option.builder("s").longOpt("sync").desc("Perform a full sync of the repository").build();
 		Option dryRunOpt = Option.builder("n").longOpt("dry-run").desc("Perform a dry run printing messages to the console").build();
 
@@ -49,16 +53,20 @@ public class Main
 		Option verboseOpt = Option.builder("v").longOpt("verbose").desc("Verbose mode or print diagnostic version info").build();
 		Option versionOpt = Option.builder("V").longOpt("version").desc("Show version").build();
 
+		Option vdmOnlyOpt = Option.builder("vdm").desc("Only consider VDM files (*.vdmsl, *.vdmsl, *.vdmrt)").build();
+
 		options.addOption(helpOpt);
 		options.addOption(repoPathOpt);
 		options.addOption(commitOpt);
 		options.addOption(syncOpt);
 		options.addOption(schemeOpt);
 		options.addOption(dryRunOpt);
+		options.addOption(excludePathPrefixOpt);
 
 		options.addOption(verboseOpt);
 		options.addOption(forceOpt);
 		options.addOption(versionOpt);
+		options.addOption(vdmOnlyOpt);
 
 		CommandLineParser parser = new DefaultParser();
 		CommandLine cmd = null;
@@ -83,6 +91,7 @@ public class Main
 		boolean force = cmd.hasOption(forceOpt.getOpt());
 		boolean verbose = cmd.hasOption(verboseOpt.getOpt());
 		boolean version = cmd.hasOption(versionOpt.getOpt());
+		boolean vdmOnly = cmd.hasOption(vdmOnlyOpt.getOpt());
 
 		boolean dryRun = cmd.hasOption(dryRunOpt.getOpt());
 
@@ -114,7 +123,7 @@ public class Main
 		File repoUri = new File(cmd.getOptionValue(repoPathOpt.getOpt())+File.separatorChar+".git");
 		String commit = cmd.getOptionValue(commitOpt.getOpt());
 
-		TraceDriver deriver = new TraceDriver(dryRun,schemeType);
+		TraceDriver deriver = new TraceDriver(dryRun,schemeType, Arrays.asList(cmd.getOptionValue(excludePathPrefixOpt.getOpt())),vdmOnly);
 		if (cmd.hasOption(syncOpt.getOpt()))
 		{
 			//perform full sync
