@@ -5,10 +5,13 @@ import org.apache.sling.commons.json.JSONObject;
 import org.eclipse.jgit.api.errors.GitAPIException;
 
 import java.io.*;
+import java.text.ParseException;
 import java.util.*;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import static com.sun.org.apache.xml.internal.serializer.utils.Utils.messages;
 
 /**
  * Created by kel on 03/11/16.
@@ -27,7 +30,7 @@ public class TraceDriver
 
 	public void fullSync(File repoUri, String commitId,
 			UrlScheme.SchemeType scheme)
-			throws IOException, GitAPIException, JSONException
+			throws IOException, GitAPIException, JSONException, ParseException
 	{
 		final IGitRepo cmdGit = new CmdGitRepo(repoUri);
 		try
@@ -39,31 +42,31 @@ public class TraceDriver
 						throws JSONException
 				{
 					List<JSONObject> list = new Vector<>();
-//					try
-//					{
-//
-//						String previoudCommit = cmdGit.getPreviousCommitId(repoCtxt, parent);
-//
-//						IGitRepoContext ctxt = repoCtxt.changeCommit(previoudCommit);
-//						for (Map.Entry<IGitRepo.GitFileStatus, List<String>> o : cmdGit.getFiles(ctxt).entrySet())
-//						{
-//							for (String file : o.getValue())
-//							{
-//								if (file.endsWith(parent))
-//								{
-//									list.addAll(IntoTraceProtocol.createSourceFile(file,
-//											o.getKey()
-//													== IGitRepo.GitFileStatus.Added, this, ctxt, cmdGit));
-//								}
-//							}
-//						}
-//					} catch (IOException e)
-//					{
-//						e.printStackTrace();
-//					} catch (InterruptedException e)
-//					{
-//						e.printStackTrace();
-//					}
+					//					try
+					//					{
+					//
+					//						String previoudCommit = cmdGit.getPreviousCommitId(repoCtxt, parent);
+					//
+					//						IGitRepoContext ctxt = repoCtxt.changeCommit(previoudCommit);
+					//						for (Map.Entry<IGitRepo.GitFileStatus, List<String>> o : cmdGit.getFiles(ctxt).entrySet())
+					//						{
+					//							for (String file : o.getValue())
+					//							{
+					//								if (file.endsWith(parent))
+					//								{
+					//									list.addAll(IntoTraceProtocol.createSourceFile(file,
+					//											o.getKey()
+					//													== IGitRepo.GitFileStatus.Added, this, ctxt, cmdGit));
+					//								}
+					//							}
+					//						}
+					//					} catch (IOException e)
+					//					{
+					//						e.printStackTrace();
+					//					} catch (InterruptedException e)
+					//					{
+					//						e.printStackTrace();
+					//					}
 					return list;
 				}
 			};
@@ -71,28 +74,45 @@ public class TraceDriver
 
 			IGitRepoContext gitCtxt = new GitCtxt(commitId, scheme);
 
-			List<JSONObject> messages = new Vector<>();
+//			List<JSONObject> entities = new Vector<>();
+//			List<JSONObject> agents = new Vector<>();
+			IntoTraceProtocol.ITMessage res = new IntoTraceProtocol.ITMessage();
 
 			for (String ref : refs)
 			{
 				gitCtxt = gitCtxt.changeCommit(ref);
 
-				logger.trace("Proceeding commit: {}",gitCtxt.getCommit());
+				logger.trace("Proceeding commit: {}", gitCtxt.getCommit());
+
+				IntoTraceProtocol.ITMessage agentMsg = IntoTraceProtocol.createAgent(gitCtxt,cmdGit);
+				res.merge(agentMsg);
+				IntoTraceProtocol.ITMessage activity = IntoTraceProtocol.createActivity(agentMsg.getCurrentId(),cmdGit.getGitCommitDate(gitCtxt));
+				res.merge(activity);
 
 				for (Map.Entry<IGitRepo.GitFileStatus, List<String>> o : cmdGit.getFiles(gitCtxt).entrySet())
 				{
 					for (String file : o.getValue())
 					{
-						logger.trace("\tProceeding file: {} - {}",o.getKey(),file);
-						messages.addAll(IntoTraceProtocol.createSourceFile(file,
+						logger.trace("\tProceeding file: {} - {}", o.getKey(), file);
+						res.merge(IntoTraceProtocol.createSourceFile(file,
 								o.getKey()
-										== IGitRepo.GitFileStatus.Added, sp, gitCtxt, cmdGit));
+										== IGitRepo.GitFileStatus.Added, sp, gitCtxt, cmdGit, activity.getCurrentId()));
+
+//						if (res.containsKey(IntoTraceProtocol.Prov.Entity))
+//						{
+//							entities.addAll(res.get(IntoTraceProtocol.Prov.Entity));
+//						}
+//						if (res.containsKey(IntoTraceProtocol.Prov.Agent))
+//						{
+//							agents.addAll(res.get(IntoTraceProtocol.Prov.Agent));
+//						}
+
 					}
 				}
 
 			}
 
-			String message = IntoTraceProtocol.makeRootMessage(new ArrayList<>(), messages.toArray(new JSONObject[] {})).toString(4);
+			String message = IntoTraceProtocol.makeRootMessage(res).toString(4);
 
 			if (dryRun)
 				System.out.printf(message);

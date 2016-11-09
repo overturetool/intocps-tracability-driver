@@ -5,6 +5,11 @@ import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.IOException;
+import java.text.DateFormat;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
 
 /**
@@ -120,6 +125,18 @@ public class CmdGitRepo implements  IGitRepo
 				"--no-pager","log","-1","--pretty=format:%ae", ctxt.getCommit()).get(0));
 
 		return strings;
+	}
+
+	@Override public Date getGitCommitDate(IGitRepoContext ctxt)
+			throws IOException, InterruptedException, ParseException
+	{
+		List<String> strings = CmdCall.call(repoPath, "git",
+				"--no-pager","log","-n","1","--pretty=format:%cd","--date=format:%Y-%m-%d %H:%M:%S", ctxt.getCommit());
+
+		DateFormat df = new SimpleDateFormat("yyyy-dd-MM HH:mm:ss");
+		Date date =  df.parse(strings.get(0));
+
+		return date;
 	}
 
 	@Override public String getPreviousCommitId(IGitRepoContext repoCtxt,

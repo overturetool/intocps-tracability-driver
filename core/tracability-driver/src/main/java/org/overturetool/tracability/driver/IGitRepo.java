@@ -2,6 +2,8 @@ package org.overturetool.tracability.driver;
 
 import java.io.File;
 import java.io.IOException;
+import java.text.ParseException;
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
@@ -25,6 +27,9 @@ public interface IGitRepo
 
 	List<String> getCommitAuthor(IGitRepoContext ctxt)
 			throws IOException, InterruptedException;
+
+	Date getGitCommitDate(IGitRepoContext ctxt)
+			throws IOException, InterruptedException, ParseException;
 
 
 	String getPreviousCommitId(IGitRepoContext repoCtxt, String path)

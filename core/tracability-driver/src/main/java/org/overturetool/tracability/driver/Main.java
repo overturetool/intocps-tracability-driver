@@ -1,6 +1,7 @@
 package org.overturetool.tracability.driver;
 
 import org.apache.commons.cli.*;
+import org.apache.commons.cli.ParseException;
 import org.apache.sling.commons.json.JSONException;
 import org.eclipse.jgit.api.errors.GitAPIException;
 import org.xml.sax.SAXException;
@@ -9,6 +10,7 @@ import javax.xml.parsers.ParserConfigurationException;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.text.*;
 import java.util.Properties;
 
 public class Main
@@ -30,7 +32,7 @@ public class Main
 
 	public static void main(String[] args)
 			throws IOException, InterruptedException, SAXException,
-			ParserConfigurationException, GitAPIException, JSONException
+			ParserConfigurationException, GitAPIException, JSONException, java.text.ParseException
 	{
 		Options options = new Options();
 		Option helpOpt = Option.builder("h").longOpt("help").desc("Show this description").build();
