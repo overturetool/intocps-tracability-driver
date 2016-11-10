@@ -11,6 +11,7 @@ import java.util.List;
  */
 public interface IStructureProvider
 {
-	List<JSONObject> getChildren(IGitRepoContext repoCtxt, String parent)
+	List<JSONObject> getChildren(IGitRepoContext repoCtxt, String parent,
+			JSONObject obj)
 			throws JSONException;
 }

@@ -8,10 +8,12 @@ import java.io.*;
 import java.text.ParseException;
 import java.util.*;
 
+import org.overture.ast.definitions.SClassDefinition;
+import org.overture.ast.lex.Dialect;
+import org.overture.config.Settings;
+import org.overture.parser.util.ParserUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import static com.sun.org.apache.xml.internal.serializer.utils.Utils.messages;
 
 /**
  * Created by kel on 03/11/16.
@@ -34,7 +36,7 @@ public class TraceDriver
 	}
 
 	public void fullSync(File repoUri, String commitId,
-			UrlScheme.SchemeType scheme)
+			UrlScheme.SchemeType scheme, boolean vdmSubModulesInclude)
 			throws IOException, GitAPIException, JSONException, ParseException
 	{
 		final IGitRepo cmdGit = new CmdGitRepo(repoUri);
@@ -43,10 +45,37 @@ public class TraceDriver
 			final IStructureProvider sp = new IStructureProvider()
 			{
 				@Override public List<JSONObject> getChildren(
-						IGitRepoContext repoCtxt, String parent)
+						IGitRepoContext repoCtxt, String parent, JSONObject obj)
 						throws JSONException
 				{
 					List<JSONObject> list = new Vector<>();
+
+					if(vdmSubModulesInclude && vdmOnly)
+					{
+						File source = new File(repoUri.getParent(),parent.replace('/',File.separatorChar));
+						Settings.dialect = Dialect.VDM_PP;
+						try
+						{
+							ParserUtil.ParserResult<List<SClassDefinition>> r = ParserUtil.parseOo(source);
+
+							for (SClassDefinition classDefinition : r.result)
+							{
+								JSONObject child = new JSONObject();
+								logger.trace("\t\t\tCreating entry for: {}", classDefinition.getName().getName());
+								child.put(IntoTraceProtocol.rdf_about, obj.get(IntoTraceProtocol.rdf_about)+":"+classDefinition.getName().getName());
+								child.put("path", obj.get("path"));
+								child.put("hash", obj.get("hash")); //TODO what is a hash
+								child.put("comment", obj.get("comment"));
+								child.put("type", "definition");
+								list.add(child);
+							}
+						}catch(Exception e)
+						{
+							System.err.println("Failure in get children parsing");
+							e.printStackTrace();
+						}
+					}
+
 					//					try
 					//					{
 					//
@@ -104,7 +133,7 @@ public class TraceDriver
 							continue fileLoop;
 						for (String exlude : excludePrefix)
 						{
-							if (file.startsWith(exlude))
+							if (exlude!=null && file.startsWith(exlude))
 								continue fileLoop;
 						}
 

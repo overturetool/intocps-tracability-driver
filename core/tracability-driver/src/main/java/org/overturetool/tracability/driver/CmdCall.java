@@ -1,9 +1,13 @@
 package org.overturetool.tracability.driver;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Vector;
 
@@ -12,7 +16,7 @@ import java.util.Vector;
  */
 public class CmdCall
 {
-
+	final static Logger logger = LoggerFactory.getLogger(CmdCall.class);
 	public static List<String> call(File workingDir, String... args)
 			throws IOException, InterruptedException
 	{
@@ -21,6 +25,7 @@ public class CmdCall
 		pb.command(args);
 
 		pb.directory(workingDir);
+		logger.trace("Executing '{}' in {}", String.join(" ",args),workingDir.getAbsolutePath());
 		Process p = pb.start();
 
 		Thread t = new Thread(() ->

@@ -313,7 +313,7 @@ public class IntoTraceProtocol
 			obj.put(Prov.WasDerivedFrom.name, derivedList);
 		}
 
-		List<JSONObject> children = structureProvider.getChildren(repoCtxt, path);
+		List<JSONObject> children = structureProvider.getChildren(repoCtxt, path,obj);
 
 		List<JSONObject> list = new Vector<>();
 		if (children != null)
@@ -328,9 +328,10 @@ public class IntoTraceProtocol
 			obj.put(Prov.HasMember.name, new JSONArray(list));
 		}
 
-		list.add(0, obj);
+		//list.add(0, obj);
 
-		map.add(Prov.Entity, list);
+		map.add(Prov.Entity, obj);
+		map.add(Prov.Entity, children);
 		//map.add(Prov.Agent, authorObject);
 
 		return map;

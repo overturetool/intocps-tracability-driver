@@ -54,6 +54,7 @@ public class Main
 		Option versionOpt = Option.builder("V").longOpt("version").desc("Show version").build();
 
 		Option vdmOnlyOpt = Option.builder("vdm").desc("Only consider VDM files (*.vdmsl, *.vdmsl, *.vdmrt)").build();
+		Option vdmSubModulesOpt = Option.builder("sub").longOpt("submodules").desc("Include submodules").build();
 
 		options.addOption(helpOpt);
 		options.addOption(repoPathOpt);
@@ -62,6 +63,7 @@ public class Main
 		options.addOption(schemeOpt);
 		options.addOption(dryRunOpt);
 		options.addOption(excludePathPrefixOpt);
+		options.addOption(vdmSubModulesOpt);
 
 		options.addOption(verboseOpt);
 		options.addOption(forceOpt);
@@ -92,6 +94,7 @@ public class Main
 		boolean verbose = cmd.hasOption(verboseOpt.getOpt());
 		boolean version = cmd.hasOption(versionOpt.getOpt());
 		boolean vdmOnly = cmd.hasOption(vdmOnlyOpt.getOpt());
+		boolean vdmSubModulesInclude = cmd.hasOption(vdmSubModulesOpt.getOpt());
 
 		boolean dryRun = cmd.hasOption(dryRunOpt.getOpt());
 
@@ -120,14 +123,14 @@ public class Main
 			}
 		}
 
-		File repoUri = new File(cmd.getOptionValue(repoPathOpt.getOpt())+File.separatorChar+".git");
+		File repoUri = new File(cmd.getOptionValue(repoPathOpt.getOpt()));
 		String commit = cmd.getOptionValue(commitOpt.getOpt());
 
 		TraceDriver deriver = new TraceDriver(dryRun,schemeType, Arrays.asList(cmd.getOptionValue(excludePathPrefixOpt.getOpt())),vdmOnly);
 		if (cmd.hasOption(syncOpt.getOpt()))
 		{
 			//perform full sync
-			deriver.fullSync(repoUri,commit, schemeType);
+			deriver.fullSync(repoUri,commit, schemeType,vdmSubModulesInclude);
 		}
 
 	}
