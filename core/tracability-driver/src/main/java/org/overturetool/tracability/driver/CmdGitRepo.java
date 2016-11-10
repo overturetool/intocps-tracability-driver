@@ -178,7 +178,7 @@ public class CmdGitRepo implements  IGitRepo
 		files.put(GitFileStatus.Deleted, new Vector<>());
 		files.put(GitFileStatus.Modified, new Vector<>());
 
-		List<String> changes = CmdCall.call(repoPath, "git", "show", "--pretty=\"format: %H\"", "--name-status", ctxt.getCommit());
+		List<String> changes = CmdCall.call(repoPath, "git", "show", "--pretty=format:%H", "--name-status", ctxt.getCommit());
 
 		for (String change : changes)
 		{
