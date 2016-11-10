@@ -11,7 +11,7 @@
 	<artifactId>tracability-driver</artifactId>
 	<name>Tracability driver for INTO-CPS</name>
 
-
+<build>
 	<resources>
 		<resource>
 			<directory>src/main/resources</directory>
@@ -22,7 +22,7 @@
 			<filtering>true</filtering>
 		</resource>
 	</resources>
-
+</build>
 	<dependencies>
 
         <dependency>
