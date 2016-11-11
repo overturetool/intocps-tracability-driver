@@ -117,9 +117,6 @@ public class IntoTraceProtocol
 
 	public static JSONObject makeRootMessage(ITMessage msg) throws JSONException
 	{
-		List<JSONObject> agents = msg.data.get(Prov.Agent);
-		List<JSONObject> entities = msg.data.get(Prov.Entity);
-
 		JSONObject body = new JSONObject();
 
 		body.put("xmlns:rdf", "http://www.w3.org/1999/02/22-rdf-syntax-ns#");
@@ -294,7 +291,7 @@ public class IntoTraceProtocol
 
 		if (activityId != null)
 		{
-			obj.put(Prov.WasGeneratedBy.name, mkObject(Prov.Agent.name, mkObject(rdf_about, activityId)));
+			obj.put(Prov.WasGeneratedBy.name, mkObject(Prov.Activity.name, mkObject(rdf_about, activityId)));
 		}
 
 		if (!added)
