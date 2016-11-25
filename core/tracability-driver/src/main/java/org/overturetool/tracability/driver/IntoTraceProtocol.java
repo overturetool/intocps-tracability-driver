@@ -307,7 +307,8 @@ public class IntoTraceProtocol
 		obj.put(rdf_about, getId(Prov.Entity,path,repo.getGitCheckSum(repoCtxt,path)));
 		obj.put(url, uri);
 		obj.put("path", path);
-		obj.put("hash", repo.getGitCheckSum(repoCtxt, path)); //TODO what is a hash
+		obj.put("hash", repo.getGitCheckSum(repoCtxt, path));
+		obj.put("commit",repoCtxt.getCommit());
 		obj.put("comment", repo.getCommitMessage(repoCtxt));
 		obj.put("type", "source");
 

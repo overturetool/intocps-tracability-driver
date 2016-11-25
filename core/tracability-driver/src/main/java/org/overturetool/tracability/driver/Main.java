@@ -44,6 +44,7 @@ public class Main
 		Option schemeOpt = Option.builder("scheme").hasArg().numberOfArgs(1).argName("github> or <gitlab> or <intocps>").desc("Specify the URL scheme to use.").build();
 
 		Option excludePathPrefixOpt = Option.builder("exclude").hasArg().numberOfArgs(1).argName("path prefix").desc("Prefix of path to exclude.").build();
+		Option hostOpt = Option.builder("host").hasArg().numberOfArgs(1).argName("host url").desc("The URL of the host daemon which messages will be send to.").build();
 
 
 		Option syncOpt = Option.builder("s").longOpt("sync").desc("Perform a full sync of the repository").build();
@@ -64,6 +65,7 @@ public class Main
 		options.addOption(dryRunOpt);
 		options.addOption(excludePathPrefixOpt);
 		options.addOption(vdmSubModulesOpt);
+		options.addOption(hostOpt);
 
 		options.addOption(verboseOpt);
 		options.addOption(forceOpt);
@@ -95,6 +97,7 @@ public class Main
 		boolean version = cmd.hasOption(versionOpt.getOpt());
 		boolean vdmOnly = cmd.hasOption(vdmOnlyOpt.getOpt());
 		boolean vdmSubModulesInclude = cmd.hasOption(vdmSubModulesOpt.getOpt());
+		String hostUrl ="http://127.0.0.1:8080/traces/push/json";
 
 		boolean dryRun = cmd.hasOption(dryRunOpt.getOpt());
 
@@ -123,14 +126,22 @@ public class Main
 			}
 		}
 
+		if(cmd.hasOption(hostOpt.getOpt()))
+		{
+			hostUrl = cmd.getOptionValue(hostOpt.getOpt());
+		}
+
 		File repoUri = new File(cmd.getOptionValue(repoPathOpt.getOpt()));
 		String commit = cmd.getOptionValue(commitOpt.getOpt());
 
-		TraceDriver deriver = new TraceDriver(dryRun,schemeType, Arrays.asList(cmd.getOptionValue(excludePathPrefixOpt.getOpt())),vdmOnly);
+		TraceDriver deriver = new TraceDriver(dryRun,hostUrl,schemeType, Arrays.asList(cmd.getOptionValue(excludePathPrefixOpt.getOpt())),vdmOnly);
 		if (cmd.hasOption(syncOpt.getOpt()))
 		{
 			//perform full sync
-			deriver.fullSync(repoUri,commit, schemeType,vdmSubModulesInclude);
+			deriver.sync(repoUri,commit, schemeType,vdmSubModulesInclude);
+		}else if (cmd.hasOption(commitOpt.getOpt()))
+		{
+			deriver.sync(repoUri,commit, schemeType,vdmSubModulesInclude,commit);
 		}
 
 	}

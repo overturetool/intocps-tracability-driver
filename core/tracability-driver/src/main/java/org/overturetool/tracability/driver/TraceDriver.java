@@ -25,145 +25,123 @@ public class TraceDriver
 	UrlScheme.SchemeType urlScheme;
 	final List<String> excludePrefix;
 	boolean vdmOnly = false;
+	final String hostUrl;
 
-	public TraceDriver(boolean dryRun, UrlScheme.SchemeType urlScheme,
-			List<String> excludePathPrefix, boolean vdmOnly)
+	public TraceDriver(boolean dryRun, String hostUrl,
+			UrlScheme.SchemeType urlScheme, List<String> excludePathPrefix,
+			boolean vdmOnly)
 	{
 		this.dryRun = dryRun;
+		this.hostUrl = hostUrl;
 		this.urlScheme = urlScheme;
 		this.excludePrefix = excludePathPrefix;
 		this.vdmOnly = vdmOnly;
 	}
 
-	public void fullSync(File repoUri, String commitId,
-			UrlScheme.SchemeType scheme, boolean vdmSubModulesInclude)
+	public void sync(File repoUri, String commitId, UrlScheme.SchemeType scheme,
+			boolean vdmSubModulesInclude, String commit)
 			throws IOException, GitAPIException, JSONException, ParseException
 	{
+		internalSync(repoUri, commitId, scheme, vdmSubModulesInclude, Arrays.asList(commit));
+	}
+
+	public void sync(File repoUri, String commitId,
+			UrlScheme.SchemeType scheme, boolean vdmSubModulesInclude)
+			throws IOException, GitAPIException, JSONException, ParseException,
+			InterruptedException
+	{
+		final IGitRepo cmdGit = new CmdGitRepo(repoUri);
+		List<String> refs = cmdGit.getCommitHistory(commitId);
+		internalSync(repoUri, commitId, scheme, vdmSubModulesInclude, refs);
+	}
+
+	private void internalSync(File repoUri, String commitId,
+			UrlScheme.SchemeType scheme, boolean vdmSubModulesInclude,
+			List<String> commits)
+			throws IOException, GitAPIException, JSONException, ParseException
+	{
+
 		final IGitRepo cmdGit = new CmdGitRepo(repoUri);
 		try
 		{
-			final IStructureProvider sp = new IStructureProvider()
+			final IStructureProvider sp = (repoCtxt, parent, obj) ->
 			{
-				@Override public List<JSONObject> getChildren(
-						IGitRepoContext repoCtxt, String parent, JSONObject obj)
-						throws JSONException
+				List<JSONObject> list = new Vector<>();
+
+				if (vdmSubModulesInclude && vdmOnly)
 				{
-					List<JSONObject> list = new Vector<>();
-
-					if(vdmSubModulesInclude && vdmOnly)
+					File source = new File(repoUri.getParent(), parent.replace('/', File.separatorChar));
+					Settings.dialect = Dialect.VDM_PP;
+					try
 					{
-						File source = new File(repoUri.getParent(),parent.replace('/',File.separatorChar));
-						Settings.dialect = Dialect.VDM_PP;
-						try
-						{
-							ParserUtil.ParserResult<List<SClassDefinition>> r = ParserUtil.parseOo(source);
+						ParserUtil.ParserResult<List<SClassDefinition>> r = ParserUtil.parseOo(source);
 
-							for (SClassDefinition classDefinition : r.result)
-							{
-								JSONObject child = new JSONObject();
-								logger.trace("\t\t\tCreating entry for: {}", classDefinition.getName().getName());
-								child.put(IntoTraceProtocol.rdf_about, obj.get(IntoTraceProtocol.rdf_about)+":"+classDefinition.getName().getName());
-								child.put("path", obj.get("path"));
-								child.put("hash", obj.get("hash")); //TODO what is a hash
-								child.put("comment", obj.get("comment"));
-								child.put("type", "definition");
-								list.add(child);
-							}
-						}catch(Exception e)
+						for (SClassDefinition classDefinition : r.result)
 						{
-							System.err.println("Failure in get children parsing");
-							e.printStackTrace();
+							JSONObject child = new JSONObject();
+							logger.trace("\t\t\tCreating entry for: {}", classDefinition.getName().getName());
+							child.put(IntoTraceProtocol.rdf_about,
+									obj.get(IntoTraceProtocol.rdf_about) + ":"
+											+ classDefinition.getName().getName());
+							child.put("path", obj.get("path"));
+							child.put("hash", obj.get("hash")); //TODO what is a hash
+							child.put("comment", obj.get("comment"));
+							child.put("type", "definition");
+							list.add(child);
 						}
+					} catch (Exception e)
+					{
+						System.err.println("Failure in get children parsing");
+						e.printStackTrace();
 					}
-
-					//					try
-					//					{
-					//
-					//						String previoudCommit = cmdGit.getPreviousCommitId(repoCtxt, parent);
-					//
-					//						IGitRepoContext ctxt = repoCtxt.changeCommit(previoudCommit);
-					//						for (Map.Entry<IGitRepo.GitFileStatus, List<String>> o : cmdGit.getFiles(ctxt).entrySet())
-					//						{
-					//							for (String file : o.getValue())
-					//							{
-					//								if (file.endsWith(parent))
-					//								{
-					//									list.addAll(IntoTraceProtocol.createSourceFile(file,
-					//											o.getKey()
-					//													== IGitRepo.GitFileStatus.Added, this, ctxt, cmdGit));
-					//								}
-					//							}
-					//						}
-					//					} catch (IOException e)
-					//					{
-					//						e.printStackTrace();
-					//					} catch (InterruptedException e)
-					//					{
-					//						e.printStackTrace();
-					//					}
-					return list;
 				}
+
+				return list;
 			};
-			List<String> refs = cmdGit.getCommitHistory(commitId);
 
 			IGitRepoContext gitCtxt = new GitCtxt(commitId, scheme);
 
-			//			List<JSONObject> entities = new Vector<>();
-			//			List<JSONObject> agents = new Vector<>();
 			IntoTraceProtocol.ITMessage res = new IntoTraceProtocol.ITMessage();
 
-			for (String ref : refs)
+			for (String ref : commits)
 			{
 				gitCtxt = gitCtxt.changeCommit(ref);
 
 				logger.trace("Proceeding commit: {}", gitCtxt.getCommit());
 
-				boolean first= true;
+				boolean first = true;
 
 				IntoTraceProtocol.ITMessage agentMsg = null;
 				IntoTraceProtocol.ITMessage activity = null;
-
 
 				for (Map.Entry<IGitRepo.GitFileStatus, List<String>> o : cmdGit.getFiles(gitCtxt).entrySet())
 				{
 					fileLoop:
 					for (String file : o.getValue())
 					{
-						if(vdmOnly && !file.toLowerCase().endsWith(".vdmrt"))
+						if (vdmOnly && !file.toLowerCase().endsWith(".vdmrt"))
 							continue fileLoop;
 						for (String exlude : excludePrefix)
 						{
-							if (exlude!=null && file.startsWith(exlude))
+							if (exlude != null && file.startsWith(exlude))
 								continue fileLoop;
 						}
 
-						if(first)
+						if (first)
 						{
-							 agentMsg = IntoTraceProtocol.createAgent(gitCtxt, cmdGit);
+							agentMsg = IntoTraceProtocol.createAgent(gitCtxt, cmdGit);
 							res.merge(agentMsg);
-							 activity = IntoTraceProtocol.createActivity(agentMsg.getCurrentId(), cmdGit.getGitCommitDate(gitCtxt));
+							activity = IntoTraceProtocol.createActivity(agentMsg.getCurrentId(), cmdGit.getGitCommitDate(gitCtxt));
 							res.merge(activity);
 							first = false;
 						}
-
 
 						logger.trace("\tProceeding file: {} - {}", o.getKey(), file);
 						res.merge(IntoTraceProtocol.createSourceFile(file,
 								o.getKey()
 										== IGitRepo.GitFileStatus.Added, sp, gitCtxt, cmdGit, activity.getCurrentId()));
-
-						//						if (res.containsKey(IntoTraceProtocol.Prov.Entity))
-						//						{
-						//							entities.addAll(res.get(IntoTraceProtocol.Prov.Entity));
-						//						}
-						//						if (res.containsKey(IntoTraceProtocol.Prov.Agent))
-						//						{
-						//							agents.addAll(res.get(IntoTraceProtocol.Prov.Agent));
-						//						}
-
 					}
 				}
-
 			}
 
 			String message = IntoTraceProtocol.makeRootMessage(res).toString(4);
@@ -172,8 +150,7 @@ public class TraceDriver
 			{
 				System.out.println(message);
 			} else
-				WebClient.post("http://127.0.0.1:8080/traces/push/json", message);
-			int i = 0;
+				WebClient.post(hostUrl, message);
 		} catch (InterruptedException e)
 		{
 			e.printStackTrace();
