@@ -24,9 +24,16 @@ The tool can be used in combination with git hooks. If the daemon is running loc
 Hook file: `.git/hooks/post-commit`
 
 ```bash
-java -jar tracability-driver-*-jar-with-dependencies.jar -c HEAD -vdm -exclude SysML -repo $GIT_DIR
+#!/bin/sh
+java -jar tracability-driver-*-jar-with-dependencies.jar -c HEAD -vdm -exclude SysML -repo $GIT_DIR../
 ```
 
 assuming that the `*.jar` file is also in hooks. 
+
+Make sure it is executable:
+
+```bash
+chmod +x .git/hooks/post-commit
+```
 
 This will trigger a sync of the new commit to the daemon.
