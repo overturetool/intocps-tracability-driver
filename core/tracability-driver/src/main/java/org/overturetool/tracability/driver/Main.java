@@ -1,18 +1,23 @@
 package org.overturetool.tracability.driver;
 
-import org.apache.commons.cli.*;
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.Arrays;
+import java.util.Properties;
+
+import javax.xml.parsers.ParserConfigurationException;
+
+import org.apache.commons.cli.CommandLine;
+import org.apache.commons.cli.CommandLineParser;
+import org.apache.commons.cli.DefaultParser;
+import org.apache.commons.cli.HelpFormatter;
+import org.apache.commons.cli.Option;
+import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
 import org.apache.sling.commons.json.JSONException;
 import org.eclipse.jgit.api.errors.GitAPIException;
 import org.xml.sax.SAXException;
-
-import javax.xml.parsers.ParserConfigurationException;
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-import java.text.*;
-import java.util.Arrays;
-import java.util.Properties;
 
 public class Main
 {
@@ -23,17 +28,17 @@ public class Main
 		{
 			if (!cmd.hasOption(option.getOpt()))
 			{
-				System.err.println(
-						"Missing required option: " + option.getOpt());
+				System.err.println("Missing required option: "
+						+ option.getOpt());
 				return false;
 			}
 		}
 		return true;
 	}
 
-	public static void main(String[] args)
-			throws IOException, InterruptedException, SAXException,
-			ParserConfigurationException, GitAPIException, JSONException, java.text.ParseException
+	public static void main(String[] args) throws IOException,
+			InterruptedException, SAXException, ParserConfigurationException,
+			GitAPIException, JSONException, java.text.ParseException
 	{
 		Options options = new Options();
 		Option helpOpt = Option.builder("h").longOpt("help").desc("Show this description").build();
@@ -45,7 +50,6 @@ public class Main
 
 		Option excludePathPrefixOpt = Option.builder("exclude").hasArg().numberOfArgs(1).argName("path prefix").desc("Prefix of path to exclude.").build();
 		Option hostOpt = Option.builder("host").hasArg().numberOfArgs(1).argName("host url").desc("The URL of the host daemon which messages will be send to.").build();
-
 
 		Option syncOpt = Option.builder("s").longOpt("sync").desc("Perform a full sync of the repository").build();
 		Option dryRunOpt = Option.builder("n").longOpt("dry-run").desc("Perform a dry run printing messages to the console").build();
@@ -97,22 +101,23 @@ public class Main
 		boolean version = cmd.hasOption(versionOpt.getOpt());
 		boolean vdmOnly = cmd.hasOption(vdmOnlyOpt.getOpt());
 		boolean vdmSubModulesInclude = cmd.hasOption(vdmSubModulesOpt.getOpt());
-		String hostUrl ="http://127.0.0.1:8080/traces/push/json";
+		String hostUrl = "http://127.0.0.1:8080/traces/push/json";
 
 		boolean dryRun = cmd.hasOption(dryRunOpt.getOpt());
 
 		UrlScheme.SchemeType schemeType = UrlScheme.SchemeType.github;
 
-		if(cmd.hasOption(schemeOpt.getOpt()))
+		if (cmd.hasOption(schemeOpt.getOpt()))
 		{
 			String scheme = cmd.getOptionValue(schemeOpt.getOpt());
 
 			try
 			{
 				schemeType = UrlScheme.SchemeType.valueOf(scheme);
-			}catch(Exception e)
+			} catch (Exception e)
 			{
-				System.err.println("Scheme "+ scheme +" is not a valid scheme");
+				System.err.println("Scheme " + scheme
+						+ " is not a valid scheme");
 				return;
 			}
 		}
@@ -126,7 +131,7 @@ public class Main
 			}
 		}
 
-		if(cmd.hasOption(hostOpt.getOpt()))
+		if (cmd.hasOption(hostOpt.getOpt()))
 		{
 			hostUrl = cmd.getOptionValue(hostOpt.getOpt());
 		}
@@ -134,14 +139,14 @@ public class Main
 		File repoUri = new File(cmd.getOptionValue(repoPathOpt.getOpt()));
 		String commit = cmd.getOptionValue(commitOpt.getOpt());
 
-		TraceDriver deriver = new TraceDriver(dryRun,hostUrl,schemeType, Arrays.asList(cmd.getOptionValue(excludePathPrefixOpt.getOpt())),vdmOnly);
+		TraceDriver deriver = new TraceDriver(dryRun, hostUrl, schemeType, Arrays.asList(cmd.getOptionValue(excludePathPrefixOpt.getOpt())), vdmOnly);
 		if (cmd.hasOption(syncOpt.getOpt()))
 		{
-			//perform full sync
-			deriver.sync(repoUri,commit, schemeType,vdmSubModulesInclude);
-		}else if (cmd.hasOption(commitOpt.getOpt()))
+			// perform full sync
+			deriver.sync(repoUri, commit, schemeType, vdmSubModulesInclude);
+		} else if (cmd.hasOption(commitOpt.getOpt()))
 		{
-			deriver.sync(repoUri,commit, schemeType,vdmSubModulesInclude,commit);
+			deriver.sync(repoUri, commit, schemeType, vdmSubModulesInclude, commit);
 		}
 
 	}

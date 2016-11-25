@@ -1,13 +1,16 @@
 package org.overturetool.tracability.driver;
 
+import java.io.File;
+import java.io.IOException;
+import java.text.ParseException;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Map;
+import java.util.Vector;
+
 import org.apache.sling.commons.json.JSONException;
 import org.apache.sling.commons.json.JSONObject;
 import org.eclipse.jgit.api.errors.GitAPIException;
-
-import java.io.*;
-import java.text.ParseException;
-import java.util.*;
-
 import org.overture.ast.definitions.SClassDefinition;
 import org.overture.ast.lex.Dialect;
 import org.overture.config.Settings;
@@ -38,9 +41,10 @@ public class TraceDriver
 		this.vdmOnly = vdmOnly;
 	}
 
-	public void sync(File repoUri, String commitId, UrlScheme.SchemeType scheme,
-			boolean vdmSubModulesInclude, String commit)
-			throws IOException, GitAPIException, JSONException, ParseException
+	public void sync(File repoUri, String commitId,
+			UrlScheme.SchemeType scheme, boolean vdmSubModulesInclude,
+			String commit) throws IOException, GitAPIException, JSONException,
+			ParseException
 	{
 		internalSync(repoUri, commitId, scheme, vdmSubModulesInclude, Arrays.asList(commit));
 	}
@@ -57,15 +61,14 @@ public class TraceDriver
 
 	private void internalSync(File repoUri, String commitId,
 			UrlScheme.SchemeType scheme, boolean vdmSubModulesInclude,
-			List<String> commits)
-			throws IOException, GitAPIException, JSONException, ParseException
+			List<String> commits) throws IOException, GitAPIException,
+			JSONException, ParseException
 	{
 
 		final IGitRepo cmdGit = new CmdGitRepo(repoUri);
 		try
 		{
-			final IStructureProvider sp = (repoCtxt, parent, obj) ->
-			{
+			final IStructureProvider sp = (repoCtxt, parent, obj) -> {
 				List<JSONObject> list = new Vector<>();
 
 				if (vdmSubModulesInclude && vdmOnly)
@@ -80,11 +83,10 @@ public class TraceDriver
 						{
 							JSONObject child = new JSONObject();
 							logger.trace("\t\t\tCreating entry for: {}", classDefinition.getName().getName());
-							child.put(IntoTraceProtocol.rdf_about,
-									obj.get(IntoTraceProtocol.rdf_about) + ":"
-											+ classDefinition.getName().getName());
+							child.put(IntoTraceProtocol.rdf_about, obj.get(IntoTraceProtocol.rdf_about)
+									+ ":" + classDefinition.getName().getName());
 							child.put("path", obj.get("path"));
-							child.put("hash", obj.get("hash")); //TODO what is a hash
+							child.put("hash", obj.get("hash")); // TODO what is a hash
 							child.put("comment", obj.get("comment"));
 							child.put("type", "definition");
 							list.add(child);
@@ -116,15 +118,18 @@ public class TraceDriver
 
 				for (Map.Entry<IGitRepo.GitFileStatus, List<String>> o : cmdGit.getFiles(gitCtxt).entrySet())
 				{
-					fileLoop:
-					for (String file : o.getValue())
+					fileLoop: for (String file : o.getValue())
 					{
 						if (vdmOnly && !file.toLowerCase().endsWith(".vdmrt"))
+						{
 							continue fileLoop;
+						}
 						for (String exlude : excludePrefix)
 						{
 							if (exlude != null && file.startsWith(exlude))
+							{
 								continue fileLoop;
+							}
 						}
 
 						if (first)
@@ -137,9 +142,7 @@ public class TraceDriver
 						}
 
 						logger.trace("\tProceeding file: {} - {}", o.getKey(), file);
-						res.merge(IntoTraceProtocol.createSourceFile(file,
-								o.getKey()
-										== IGitRepo.GitFileStatus.Added, sp, gitCtxt, cmdGit, activity.getCurrentId()));
+						res.merge(IntoTraceProtocol.createSourceFile(file, o.getKey() == IGitRepo.GitFileStatus.Added, sp, gitCtxt, cmdGit, activity.getCurrentId()));
 					}
 				}
 			}
@@ -150,7 +153,9 @@ public class TraceDriver
 			{
 				System.out.println(message);
 			} else
+			{
 				WebClient.post(hostUrl, message);
+			}
 		} catch (InterruptedException e)
 		{
 			e.printStackTrace();

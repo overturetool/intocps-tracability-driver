@@ -1,5 +1,7 @@
 package org.overturetool.tracability.driver;
 
+import java.io.IOException;
+
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;
@@ -7,8 +9,6 @@ import org.apache.http.client.methods.HttpPost;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.util.EntityUtils;
-
-import java.io.IOException;
 
 /**
  * Created by kel on 03/11/16.
@@ -40,9 +40,9 @@ public class WebClient
 			}
 
 			// handle response here...
-		}  finally
+		} finally
 		{
-			httpClient.getConnectionManager().shutdown(); //Deprecated
+			httpClient.getConnectionManager().shutdown(); // Deprecated
 		}
 	}
 }

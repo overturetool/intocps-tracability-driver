@@ -4,20 +4,25 @@ package org.overturetool.tracability.driver;
  * Created by kel on 03/11/16.
  */
 
+import java.io.IOException;
+import java.text.SimpleDateFormat;
+import java.util.Arrays;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.UUID;
+import java.util.Vector;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.Function;
+import java.util.function.Predicate;
+import java.util.stream.Collectors;
+
 import org.apache.sling.commons.json.JSONArray;
 import org.apache.sling.commons.json.JSONException;
 import org.apache.sling.commons.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.io.File;
-import java.io.IOException;
-import java.text.SimpleDateFormat;
-import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.function.Function;
-import java.util.function.Predicate;
-import java.util.stream.Collectors;
 
 public class IntoTraceProtocol
 {
@@ -59,9 +64,12 @@ public class IntoTraceProtocol
 		{
 			List<JSONObject> list = null;
 			if (data.containsKey(type))
+			{
 				list = data.get(type);
-			else
+			} else
+			{
 				list = new Vector<>();
+			}
 
 			list.addAll(obj);
 			data.put(type, list);
@@ -117,7 +125,8 @@ public class IntoTraceProtocol
 		return t -> seen.put(keyExtractor.apply(t), "") == null;
 	}
 
-	public static JSONObject makeRootMessage(ITMessage msg) throws JSONException
+	public static JSONObject makeRootMessage(ITMessage msg)
+			throws JSONException
 	{
 		JSONObject body = new JSONObject();
 
@@ -131,8 +140,7 @@ public class IntoTraceProtocol
 			if (list != null && !list.isEmpty())
 			{
 
-				List<JSONObject> filteredList = list.stream().filter(distinctByKey(p ->
-				{
+				List<JSONObject> filteredList = list.stream().filter(distinctByKey(p -> {
 					try
 					{
 						return p.get(rdf_about);
@@ -147,36 +155,36 @@ public class IntoTraceProtocol
 			}
 		}
 
-		//		if (entities != null && entities.size() > 0)
-		//		{
-		//			//body.put(Prov.Entity.name, new JSONArray(Arrays.asList(entities)));
-		//			body.put(Prov.Entity.name, new JSONArray(entities.stream().filter(distinctByKey(p ->
-		//			{
-		//				try
-		//				{
-		//					return p.get(rdf_about);
-		//				} catch (JSONException e)
-		//				{
-		//					e.printStackTrace();
-		//					return null;
-		//				}
-		//			})).collect(Collectors.toList())));
-		//		}
+		// if (entities != null && entities.size() > 0)
+		// {
+		// //body.put(Prov.Entity.name, new JSONArray(Arrays.asList(entities)));
+		// body.put(Prov.Entity.name, new JSONArray(entities.stream().filter(distinctByKey(p ->
+		// {
+		// try
+		// {
+		// return p.get(rdf_about);
+		// } catch (JSONException e)
+		// {
+		// e.printStackTrace();
+		// return null;
+		// }
+		// })).collect(Collectors.toList())));
+		// }
 		//
-		//		if (agents != null && !agents.isEmpty())
-		//		{
-		//			body.put(Prov.Agent.name, new JSONArray(agents.stream().filter(distinctByKey(p ->
-		//			{
-		//				try
-		//				{
-		//					return p.get(rdf_about);
-		//				} catch (JSONException e)
-		//				{
-		//					e.printStackTrace();
-		//					return null;
-		//				}
-		//			})).collect(Collectors.toList())));
-		//		}
+		// if (agents != null && !agents.isEmpty())
+		// {
+		// body.put(Prov.Agent.name, new JSONArray(agents.stream().filter(distinctByKey(p ->
+		// {
+		// try
+		// {
+		// return p.get(rdf_about);
+		// } catch (JSONException e)
+		// {
+		// e.printStackTrace();
+		// return null;
+		// }
+		// })).collect(Collectors.toList())));
+		// }
 
 		JSONObject root = new JSONObject();
 		root.put("rdf:RDF", body);
@@ -216,7 +224,7 @@ public class IntoTraceProtocol
 	{
 		JSONObject obj = new JSONObject();
 
-		obj.put(rdf_about,getId(Prov.Entity,SOFTWARETOOL, name, version));
+		obj.put(rdf_about, getId(Prov.Entity, SOFTWARETOOL, name, version));
 		obj.put("version", version);
 		obj.put("type", "softwareTool");
 		obj.put("name", name);
@@ -232,7 +240,7 @@ public class IntoTraceProtocol
 		SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd-hh-mm-ss");
 
 		String time = formatter.format(date);
-		obj.put(rdf_about,getId(Prov.Activity,"modelling", time));
+		obj.put(rdf_about, getId(Prov.Activity, "modelling", time));
 		obj.put("time", time);
 		obj.put("type", "activity");
 		if (agentId != null)
@@ -241,7 +249,6 @@ public class IntoTraceProtocol
 		}
 		ITMessage toolMsg = createTool("Overture", "2.4.0");
 		obj.put(Prov.Used.name, mkObject(Prov.Entity.name, mkObject(rdf_about, toolMsg.getCurrentId())));
-
 
 		ITMessage msg = new ITMessage(Prov.Activity, obj);
 		msg.merge(toolMsg);
@@ -261,17 +268,20 @@ public class IntoTraceProtocol
 				}
 
 				if (args.length == 2)
-					//Entity.<entity type>:<git relative path>#<githash of the document>
+				{
+					// Entity.<entity type>:<git relative path>#<githash of the document>
 					return String.format("Entity.%s:%s#%s", "source", args[0], args[1]);
-				else if (args.length == 3)
-					//Entity.<entity type>:<git relative path>:<subpart name>#<githash of the document>
+				} else if (args.length == 3)
+				{
+					// Entity.<entity type>:<git relative path>:<subpart name>#<githash of the document>
 					return String.format("Entity.%s:%s:%s#%s", "source", args[0], args[1], args[2]);
+				}
 			case Agent:
-				//Agent:<unique username>
-				return String.format("Agent:%s",args[0]);
+				// Agent:<unique username>
+				return String.format("Agent:%s", args[0]);
 			case Activity:
-				//Activity.<activity type>:<time in format yyyy-mm-dd-hh-mm-ss>#
-				return String.format("Activity.%s:%s:%s", args[0],args[1],UUID.randomUUID());
+				// Activity.<activity type>:<time in format yyyy-mm-dd-hh-mm-ss>#
+				return String.format("Activity.%s:%s:%s", args[0], args[1], UUID.randomUUID());
 			case WasDerivedFrom:
 				break;
 			case HasMember:
@@ -290,25 +300,26 @@ public class IntoTraceProtocol
 
 	/***
 	 * get a list of file entries where the first entry is the requested root file
+	 * 
 	 * @param structureProvider
 	 * @param repo
 	 * @return
 	 */
 	public static ITMessage createSourceFile(String path, boolean added,
 			IStructureProvider structureProvider, IGitRepoContext repoCtxt,
-			IGitRepo repo, String activityId)
-			throws IOException, InterruptedException, JSONException
+			IGitRepo repo, String activityId) throws IOException,
+			InterruptedException, JSONException
 	{
 		ITMessage map = new ITMessage();
 
 		JSONObject obj = new JSONObject();
 		String uri = repo.getUri(repoCtxt, path);
 		logger.trace("\t\tCreating entry for: {}", uri);
-		obj.put(rdf_about, getId(Prov.Entity,path,repo.getGitCheckSum(repoCtxt,path)));
+		obj.put(rdf_about, getId(Prov.Entity, path, repo.getGitCheckSum(repoCtxt, path)));
 		obj.put(url, uri);
 		obj.put("path", path);
 		obj.put("hash", repo.getGitCheckSum(repoCtxt, path));
-		obj.put("commit",repoCtxt.getCommit());
+		obj.put("commit", repoCtxt.getCommit());
 		obj.put("comment", repo.getCommitMessage(repoCtxt));
 		obj.put("type", "source");
 
@@ -325,7 +336,11 @@ public class IntoTraceProtocol
 		{
 			JSONArray derivedList = new JSONArray();
 
-			String priviousUrl = repo.getUri(repoCtxt.changeCommit(repo.getPreviousCommitId(repoCtxt, path)), path);//TODO adjust to previous commit
+			String priviousUrl = repo.getUri(repoCtxt.changeCommit(repo.getPreviousCommitId(repoCtxt, path)), path);// TODO
+																													// adjust
+																													// to
+																													// previous
+																													// commit
 
 			logger.trace("\t\t\tDetected previous revision at: {}", priviousUrl);
 
@@ -352,11 +367,11 @@ public class IntoTraceProtocol
 			obj.put(Prov.HasMember.name, new JSONArray(list));
 		}
 
-		//list.add(0, obj);
+		// list.add(0, obj);
 
 		map.add(Prov.Entity, obj);
 		map.add(Prov.Entity, children);
-		//map.add(Prov.Agent, authorObject);
+		// map.add(Prov.Agent, authorObject);
 
 		return map;
 	}

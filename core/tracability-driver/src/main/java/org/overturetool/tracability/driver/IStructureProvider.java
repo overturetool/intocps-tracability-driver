@@ -1,10 +1,9 @@
 package org.overturetool.tracability.driver;
 
+import java.util.List;
 
 import org.apache.sling.commons.json.JSONException;
 import org.apache.sling.commons.json.JSONObject;
-
-import java.util.List;
 
 /**
  * Created by kel on 04/11/16.
@@ -12,6 +11,5 @@ import java.util.List;
 public interface IStructureProvider
 {
 	List<JSONObject> getChildren(IGitRepoContext repoCtxt, String parent,
-			JSONObject obj)
-			throws JSONException;
+			JSONObject obj) throws JSONException;
 }

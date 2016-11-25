@@ -1,8 +1,18 @@
 package org.overturetool.tracability.driver.tests;
-import com.google.common.collect.Lists;
+
+import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.IOException;
+import java.util.Date;
+import java.util.List;
+
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.errors.GitAPIException;
-import org.eclipse.jgit.lib.*;
+import org.eclipse.jgit.lib.ObjectId;
+import org.eclipse.jgit.lib.ObjectLoader;
+import org.eclipse.jgit.lib.ObjectReader;
+import org.eclipse.jgit.lib.Ref;
+import org.eclipse.jgit.lib.Repository;
 import org.eclipse.jgit.revwalk.RevCommit;
 import org.eclipse.jgit.revwalk.RevTree;
 import org.eclipse.jgit.revwalk.RevWalk;
@@ -10,11 +20,7 @@ import org.eclipse.jgit.storage.file.FileRepositoryBuilder;
 import org.eclipse.jgit.treewalk.CanonicalTreeParser;
 import org.eclipse.jgit.treewalk.TreeWalk;
 
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.util.Date;
-import java.util.List;
-import java.io.File;
+import com.google.common.collect.Lists;
 
 /**
  * Created by kel on 04/11/16.
@@ -24,7 +30,7 @@ public class JGitTryout
 
 	public void test() throws IOException, GitAPIException
 	{
-		File repoUri=new File(".git");
+		File repoUri = new File(".git");
 		String commitId = "HEAD";
 
 		Repository repo = new FileRepositoryBuilder().setGitDir(repoUri).build();
@@ -34,8 +40,8 @@ public class JGitTryout
 		{
 			git = new Git(repo);
 
-			//ObjectId list = git.g.resolve(String.format("git rev-list %s", commit);
-			//git.exactRef()
+			// ObjectId list = git.g.resolve(String.format("git rev-list %s", commit);
+			// git.exactRef()
 
 			{
 
@@ -44,8 +50,8 @@ public class JGitTryout
 				try (ObjectReader reader = repo.newObjectReader())
 				{
 					CanonicalTreeParser treeParser = new CanonicalTreeParser(null, reader, commits.iterator().next().getTree());
-					//				boolean haveFile = treeParser.findFile(testFileName);
-					//				System.out.println("test file in commit", haveFile);
+					// boolean haveFile = treeParser.findFile(testFileName);
+					// System.out.println("test file in commit", haveFile);
 					System.out.println(treeParser.getEntryPathString());
 					ObjectId objectForInitialVersionOfFile = treeParser.getEntryObjectId();
 
@@ -54,7 +60,7 @@ public class JGitTryout
 					ObjectLoader oLoader = reader.open(objectForInitialVersionOfFile);
 					ByteArrayOutputStream contentToBytes = new ByteArrayOutputStream();
 					oLoader.copyTo(contentToBytes);
-					//				System.out.println("initial content", new String(contentToBytes.toByteArray(), "utf-8"));
+					// System.out.println("initial content", new String(contentToBytes.toByteArray(), "utf-8"));
 				}
 			}
 
@@ -81,12 +87,12 @@ public class JGitTryout
 
 			}
 
-			//			ReflogReader refLog = repo.getReflogReader(commitRef);
+			// ReflogReader refLog = repo.getReflogReader(commitRef);
 			//
-			//			for(ReflogEntry r : refLog.getReverseEntries())
-			//			{
-			//				System.out.printf(				r.getComment());
-			//			}
+			// for(ReflogEntry r : refLog.getReverseEntries())
+			// {
+			// System.out.printf( r.getComment());
+			// }
 
 			List<Ref> branches = git.branchList().call();
 
@@ -105,15 +111,16 @@ public class JGitTryout
 				{
 					System.out.println(commit.getName());
 					System.out.println(commit.getAuthorIdent().getName());
-					System.out.println(new Date(
-							commit.getCommitTime() * 1000L));
+					System.out.println(new Date(commit.getCommitTime() * 1000L));
 					System.out.println(commit.getFullMessage());
 				}
 			}
 		} finally
 		{
 			if (git != null)
+			{
 				git.close();
+			}
 		}
 	}
 }

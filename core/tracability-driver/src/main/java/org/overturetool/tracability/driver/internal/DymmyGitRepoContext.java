@@ -8,22 +8,26 @@ import org.overturetool.tracability.driver.UrlScheme;
  */
 public class DymmyGitRepoContext implements IGitRepoContext
 {
-	@Override public String getCommit()
+	@Override
+	public String getCommit()
 	{
 		return "1234";
 	}
 
-	@Override public IGitRepoContext changeCommit(String commit)
+	@Override
+	public IGitRepoContext changeCommit(String commit)
 	{
 		return null;
 	}
 
-	@Override public UrlScheme.SchemeType getUrlScheme()
+	@Override
+	public UrlScheme.SchemeType getUrlScheme()
 	{
 		return null;
 	}
 
-	@Override public void setScheme(UrlScheme.SchemeType type)
+	@Override
+	public void setScheme(UrlScheme.SchemeType type)
 	{
 
 	}
