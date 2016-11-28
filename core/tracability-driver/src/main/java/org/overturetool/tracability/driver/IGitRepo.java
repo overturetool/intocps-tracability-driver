@@ -14,6 +14,12 @@ public interface IGitRepo
 	String getCommitMessage(IGitRepoContext ctxt) throws IOException,
 			InterruptedException;
 
+	List<String> getDiff(IGitRepoContext gitCtxt, String previousCommitId,
+			String file) throws IOException, InterruptedException;
+
+	List<String> showFile(IGitRepoContext gitCtxt, String file)
+			throws IOException, InterruptedException;
+
 	enum GitFileStatus
 	{
 		Added, Deleted, Modified

@@ -22,6 +22,21 @@ public class DummyGitRepo implements IGitRepo
 	}
 
 	@Override
+	public List<String> getDiff(IGitRepoContext gitCtxt,
+			String previousCommitId, String file) throws IOException,
+			InterruptedException
+	{
+		return null;
+	}
+
+	@Override
+	public List<String> showFile(IGitRepoContext gitCtxt, String file)
+			throws IOException, InterruptedException
+	{
+		return null;
+	}
+
+	@Override
 	public String getPath(String path)
 	{
 		return "my/path/";

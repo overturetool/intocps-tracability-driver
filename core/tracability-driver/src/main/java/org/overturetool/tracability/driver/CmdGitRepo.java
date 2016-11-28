@@ -39,6 +39,26 @@ public class CmdGitRepo implements IGitRepo
 	}
 
 	@Override
+	public List<String> getDiff(IGitRepoContext ctxt, String previousCommitId,
+			String file) throws IOException, InterruptedException
+	{
+		if (previousCommitId == null)
+		{
+			return null;
+		}
+
+		return CmdCall.call(repoPath, "git", "diff", previousCommitId, ctxt.getCommit(), file);
+	}
+
+	@Override
+	public List<String> showFile(IGitRepoContext ctxt, String file)
+			throws IOException, InterruptedException
+	{
+		return CmdCall.call(repoPath, "git", "show", ctxt.getCommit() + ":"
+				+ file);
+	}
+
+	@Override
 	public String getPath(String path)
 	{
 		return null;
@@ -163,8 +183,14 @@ public class CmdGitRepo implements IGitRepo
 			throws IOException, InterruptedException
 	{
 		List<String> refs = CmdCall.call(repoPath, "git", "rev-list", repoCtxt.getCommit(), "--", path);
+		if (refs.size() > 1)
+		{
+			return refs.get(1);
+		} else
+		{
+			return null;
+		}
 
-		return refs.get(1);
 	}
 
 	@Override

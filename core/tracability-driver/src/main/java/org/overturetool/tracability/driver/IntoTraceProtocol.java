@@ -30,6 +30,9 @@ public class IntoTraceProtocol
 	public final static String rdf_about = "rdf:about";
 	public final static String url = "url";
 	public final static String SOFTWARETOOL = "softwareTool";
+	public final static String ACTIVITY_MODELLING = "modelling";
+	public static final String ACTIVITY_MODEL_DESCRIPTION_IMPORT = "modelDescriptionImport";
+	public static final String ACTIVITY_FMU_EXPORT = "fmu_export";
 
 	public static class ITMessage
 	{
@@ -232,22 +235,22 @@ public class IntoTraceProtocol
 		return new ITMessage(Prov.Entity, obj);
 	}
 
-	public static ITMessage createActivity(String agentId, Date date)
-			throws JSONException
+	public static ITMessage createActivity(String agentId, String activityName,
+			Date date, ITMessage toolMsg) throws JSONException
 	{
 		JSONObject obj = new JSONObject();
 
 		SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd-hh-mm-ss");
 
 		String time = formatter.format(date);
-		obj.put(rdf_about, getId(Prov.Activity, "modelling", time));
+		obj.put(rdf_about, getId(Prov.Activity, activityName, time));
 		obj.put("time", time);
 		obj.put("type", "activity");
 		if (agentId != null)
 		{
 			obj.put(Prov.WasAssociatedWith.name, mkObject(Prov.Agent.name, mkObject(rdf_about, agentId)));
 		}
-		ITMessage toolMsg = createTool("Overture", "2.4.0");
+
 		obj.put(Prov.Used.name, mkObject(Prov.Entity.name, mkObject(rdf_about, toolMsg.getCurrentId())));
 
 		ITMessage msg = new ITMessage(Prov.Activity, obj);
@@ -310,7 +313,6 @@ public class IntoTraceProtocol
 			IGitRepo repo, String activityId) throws IOException,
 			InterruptedException, JSONException
 	{
-		ITMessage map = new ITMessage();
 
 		JSONObject obj = new JSONObject();
 		String uri = repo.getUri(repoCtxt, path);
@@ -323,6 +325,7 @@ public class IntoTraceProtocol
 		obj.put("comment", repo.getCommitMessage(repoCtxt));
 		obj.put("type", "source");
 
+		ITMessage map = new ITMessage(Prov.Entity, obj);
 		ITMessage authorObject = createAgent(repoCtxt, repo);
 		map.merge(authorObject);
 		obj.put(Prov.WasAttributedTo.name, mkObject(Prov.Agent.name, mkObject(rdf_about, authorObject.getCurrentId())));
@@ -369,10 +372,21 @@ public class IntoTraceProtocol
 
 		// list.add(0, obj);
 
-		map.add(Prov.Entity, obj);
+		// map.add(Prov.Entity, obj);
 		map.add(Prov.Entity, children);
 		// map.add(Prov.Agent, authorObject);
 
 		return map;
+	}
+
+	public static ITMessage createBasicEntity(String name, String hash)
+			throws JSONException
+	{
+		JSONObject obj = new JSONObject();
+		obj.put(rdf_about, getId(Prov.Entity, name, hash));
+		obj.put("hash", hash);
+		obj.put("type", "source");
+
+		return new ITMessage(Prov.Entity, obj);
 	}
 }

@@ -101,7 +101,7 @@ public class Main
 		boolean version = cmd.hasOption(versionOpt.getOpt());
 		boolean vdmOnly = cmd.hasOption(vdmOnlyOpt.getOpt());
 		boolean vdmSubModulesInclude = cmd.hasOption(vdmSubModulesOpt.getOpt());
-		String hostUrl = "http://127.0.0.1:8080/traces/push/json";
+		String hostUrl = "http://127.0.0.1:8080";
 
 		boolean dryRun = cmd.hasOption(dryRunOpt.getOpt());
 

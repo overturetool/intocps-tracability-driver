@@ -5,6 +5,7 @@ import java.io.IOException;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;
+import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.HttpClientBuilder;
@@ -15,6 +16,22 @@ import org.apache.http.util.EntityUtils;
  */
 public class WebClient
 {
+	public static String get(String url) throws IOException
+	{
+		HttpClient httpClient = HttpClientBuilder.create().build();
+		try
+		{
+			HttpGet request = new HttpGet(url);
+			HttpResponse response = httpClient.execute(request);
+
+			HttpEntity entity = response.getEntity();
+
+			return EntityUtils.toString(entity, "UTF-8");
+		} finally
+		{
+			httpClient.getConnectionManager().shutdown(); // Deprecated
+		}
+	}
 
 	public static void post(String url, String... data) throws IOException
 	{
