@@ -251,7 +251,7 @@ public class TraceDriver
 							if (mdId == null)
 							{
 								IntoTraceProtocol.ITMessage msg = IntoTraceProtocol.createBasicEntity(fileName, hash);
-								msg.getCurrent().put("type", "modelDescription");
+								msg.getCurrent().put(IntoTraceProtocol.IntoCps.Type.name, IntoTraceProtocol.IntoCpsTypes.ModelDescription.name);
 								importExportMsg.merge(msg);
 								mdId = msg.getCurrentId();
 							}
@@ -264,7 +264,7 @@ public class TraceDriver
 						} else if (isExport)
 						{
 							IntoTraceProtocol.ITMessage msg = IntoTraceProtocol.createBasicEntity(fileName, hash);
-							msg.getCurrent().put("type", "FMU");
+							msg.getCurrent().put(IntoTraceProtocol.IntoCps.Type.name, IntoTraceProtocol.IntoCpsTypes.Fmu.name);
 							importExportMsg.merge(msg);
 
 							IntoTraceProtocol.ITMessage activity = IntoTraceProtocol.createActivity(agentId, IntoTraceProtocol.ACTIVITY_FMU_EXPORT, date, toolMsg);

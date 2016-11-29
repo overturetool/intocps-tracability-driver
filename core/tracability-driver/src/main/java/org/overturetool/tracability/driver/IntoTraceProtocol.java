@@ -28,7 +28,6 @@ public class IntoTraceProtocol
 {
 	final static Logger logger = LoggerFactory.getLogger(IntoTraceProtocol.class);
 	public final static String rdf_about = "rdf:about";
-	public final static String url = "url";
 	public final static String SOFTWARETOOL = "softwareTool";
 	public final static String ACTIVITY_MODELLING = "modelling";
 	public static final String ACTIVITY_MODEL_DESCRIPTION_IMPORT = "modelDescriptionImport";
@@ -121,6 +120,56 @@ public class IntoTraceProtocol
 		}
 	}
 
+	public enum IntoCps
+	{
+		Name("name"),
+
+		Email("email"),
+
+		Version("version"),
+
+		Type("type"),
+
+		Hash("hash"),
+
+		Path("path"),
+
+		Commit("commit"),
+
+		Comment("comment"),
+
+		Time("time"),
+
+		Url("url");
+
+		public final String name;
+
+		IntoCps(String name)
+		{
+			this.name = "intocps:" + name;
+		}
+	}
+
+	public enum IntoCpsTypes
+	{
+		SoftwareTool("softwareTool"),
+
+		Activity("activity"),
+
+		Source("source"),
+
+		Fmu("fmu"),
+
+		ModelDescription("modelDescription");
+
+		public final String name;
+
+		IntoCpsTypes(String name)
+		{
+			this.name = "intocps:" + name;
+		}
+	}
+
 	public static <T> Predicate<T> distinctByKey(
 			Function<? super T, Object> keyExtractor)
 	{
@@ -128,14 +177,14 @@ public class IntoTraceProtocol
 		return t -> seen.put(keyExtractor.apply(t), "") == null;
 	}
 
-	public static JSONObject makeRootMessage(ITMessage msg)
-			throws JSONException
+	public static JSONObject makeRootMessage(ITMessage msg) throws JSONException
 	{
 		JSONObject body = new JSONObject();
 
 		body.put("xmlns:rdf", "http://www.w3.org/1999/02/22-rdf-syntax-ns#");
 		body.put("xmlns:prov", "http://www.w3.org/ns/prov#");
-		body.put("messageFormatVersion", "0.1");
+		body.put("xmlns:intocps", "http://www.w3.org/ns/intocps#");
+		body.put("messageFormatVersion", "0.2");
 
 		for (Map.Entry<Prov, List<JSONObject>> entry : msg.data.entrySet())
 		{
@@ -143,7 +192,8 @@ public class IntoTraceProtocol
 			if (list != null && !list.isEmpty())
 			{
 
-				List<JSONObject> filteredList = list.stream().filter(distinctByKey(p -> {
+				List<JSONObject> filteredList = list.stream().filter(distinctByKey(p ->
+				{
 					try
 					{
 						return p.get(rdf_about);
@@ -158,36 +208,6 @@ public class IntoTraceProtocol
 			}
 		}
 
-		// if (entities != null && entities.size() > 0)
-		// {
-		// //body.put(Prov.Entity.name, new JSONArray(Arrays.asList(entities)));
-		// body.put(Prov.Entity.name, new JSONArray(entities.stream().filter(distinctByKey(p ->
-		// {
-		// try
-		// {
-		// return p.get(rdf_about);
-		// } catch (JSONException e)
-		// {
-		// e.printStackTrace();
-		// return null;
-		// }
-		// })).collect(Collectors.toList())));
-		// }
-		//
-		// if (agents != null && !agents.isEmpty())
-		// {
-		// body.put(Prov.Agent.name, new JSONArray(agents.stream().filter(distinctByKey(p ->
-		// {
-		// try
-		// {
-		// return p.get(rdf_about);
-		// } catch (JSONException e)
-		// {
-		// e.printStackTrace();
-		// return null;
-		// }
-		// })).collect(Collectors.toList())));
-		// }
 
 		JSONObject root = new JSONObject();
 		root.put("rdf:RDF", body);
@@ -216,8 +236,8 @@ public class IntoTraceProtocol
 		JSONObject obj = new JSONObject();
 
 		obj.put(rdf_about, getId(Prov.Agent, name.replace(' ', '_')));
-		obj.put("name", name);
-		obj.put("email", email);
+		obj.put(IntoCps.Name.name, name);
+		obj.put(IntoCps.Email.name, email);
 
 		return new ITMessage(Prov.Agent, obj);
 	}
@@ -228,9 +248,9 @@ public class IntoTraceProtocol
 		JSONObject obj = new JSONObject();
 
 		obj.put(rdf_about, getId(Prov.Entity, SOFTWARETOOL, name, version));
-		obj.put("version", version);
-		obj.put("type", "softwareTool");
-		obj.put("name", name);
+		obj.put(IntoCps.Version.name, version);
+		obj.put(IntoCps.Type.name, IntoCpsTypes.SoftwareTool.name);
+		obj.put(IntoCps.Name.name, name);
 
 		return new ITMessage(Prov.Entity, obj);
 	}
@@ -244,8 +264,8 @@ public class IntoTraceProtocol
 
 		String time = formatter.format(date);
 		obj.put(rdf_about, getId(Prov.Activity, activityName, time));
-		obj.put("time", time);
-		obj.put("type", "activity");
+		obj.put(IntoCps.Time.name, time);
+		obj.put(IntoCps.Type.name, IntoCpsTypes.Activity.name);
 		if (agentId != null)
 		{
 			obj.put(Prov.WasAssociatedWith.name, mkObject(Prov.Agent.name, mkObject(rdf_about, agentId)));
@@ -303,27 +323,27 @@ public class IntoTraceProtocol
 
 	/***
 	 * get a list of file entries where the first entry is the requested root file
-	 * 
+	 *
 	 * @param structureProvider
 	 * @param repo
 	 * @return
 	 */
 	public static ITMessage createSourceFile(String path, boolean added,
 			IStructureProvider structureProvider, IGitRepoContext repoCtxt,
-			IGitRepo repo, String activityId) throws IOException,
-			InterruptedException, JSONException
+			IGitRepo repo, String activityId)
+			throws IOException, InterruptedException, JSONException
 	{
 
 		JSONObject obj = new JSONObject();
 		String uri = repo.getUri(repoCtxt, path);
 		logger.trace("\t\tCreating entry for: {}", uri);
 		obj.put(rdf_about, getId(Prov.Entity, path, repo.getGitCheckSum(repoCtxt, path)));
-		obj.put(url, uri);
-		obj.put("path", path);
-		obj.put("hash", repo.getGitCheckSum(repoCtxt, path));
-		obj.put("commit", repoCtxt.getCommit());
-		obj.put("comment", repo.getCommitMessage(repoCtxt));
-		obj.put("type", "source");
+		obj.put(IntoCps.Url.name, uri);
+		obj.put(IntoCps.Path.name, path);
+		obj.put(IntoCps.Hash.name, repo.getGitCheckSum(repoCtxt, path));
+		obj.put(IntoCps.Commit.name, repoCtxt.getCommit());
+		obj.put(IntoCps.Comment.name, repo.getCommitMessage(repoCtxt));
+		obj.put(IntoCps.Type.name, IntoCpsTypes.Source.name);
 
 		ITMessage map = new ITMessage(Prov.Entity, obj);
 		ITMessage authorObject = createAgent(repoCtxt, repo);
@@ -340,10 +360,10 @@ public class IntoTraceProtocol
 			JSONArray derivedList = new JSONArray();
 
 			String priviousUrl = repo.getUri(repoCtxt.changeCommit(repo.getPreviousCommitId(repoCtxt, path)), path);// TODO
-																													// adjust
-																													// to
-																													// previous
-																													// commit
+			// adjust
+			// to
+			// previous
+			// commit
 
 			logger.trace("\t\t\tDetected previous revision at: {}", priviousUrl);
 
@@ -384,8 +404,8 @@ public class IntoTraceProtocol
 	{
 		JSONObject obj = new JSONObject();
 		obj.put(rdf_about, getId(Prov.Entity, name, hash));
-		obj.put("hash", hash);
-		obj.put("type", "source");
+		obj.put(IntoCps.Hash.name, hash);
+		obj.put(IntoCps.Type.name, IntoCpsTypes.Source.name);
 
 		return new ITMessage(Prov.Entity, obj);
 	}
