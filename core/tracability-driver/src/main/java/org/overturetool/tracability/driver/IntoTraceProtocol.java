@@ -146,7 +146,7 @@ public class IntoTraceProtocol
 
 		IntoCps(String name)
 		{
-			this.name = "intocps:" + name;
+			this.name = /*"intocps:" +*/ name;
 		}
 	}
 
@@ -336,7 +336,9 @@ public class IntoTraceProtocol
 
 		JSONObject obj = new JSONObject();
 		String uri = repo.getUri(repoCtxt, path);
-		logger.trace("\t\tCreating entry for: {}", uri);
+		logger.trace("Creating entry for: {}", uri);
+		logger.trace("\tCommit: {} Path: {}", repoCtxt.getCommit(),path);
+
 		obj.put(rdf_about, getId(Prov.Entity, path, repo.getGitCheckSum(repoCtxt, path)));
 		obj.put(IntoCps.Url.name, uri);
 		obj.put(IntoCps.Path.name, path);
@@ -359,16 +361,18 @@ public class IntoTraceProtocol
 		{
 			JSONArray derivedList = new JSONArray();
 
-			String priviousUrl = repo.getUri(repoCtxt.changeCommit(repo.getPreviousCommitId(repoCtxt, path)), path);// TODO
+			IGitRepo.CommitPathPair previousCommit = repo.getPreviousCommitId(repoCtxt, path);
+			//String priviousUrl = repo.getUri(repoCtxt.changeCommit(previousCommit.commitId), previousCommit.path);// TODO
 			// adjust
 			// to
 			// previous
 			// commit
 
-			logger.trace("\t\t\tDetected previous revision at: {}", priviousUrl);
+			logger.trace("\tDetected previous revision at: {}", previousCommit.commitId);
+			logger.trace("\t\t\t\tFrom commit: {} and path: {}", previousCommit.commitId,previousCommit.path);
 
 			JSONObject pObj = new JSONObject();
-			pObj.put(rdf_about, priviousUrl);
+			pObj.put(rdf_about, getId(Prov.Entity, previousCommit.path, repo.getGitCheckSum(repoCtxt.changeCommit(previousCommit.commitId), previousCommit.path)));
 
 			derivedList.put(mkObject(Prov.Entity.name, pObj));
 

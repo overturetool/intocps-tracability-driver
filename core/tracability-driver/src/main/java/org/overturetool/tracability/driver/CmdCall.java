@@ -17,7 +17,14 @@ public class CmdCall
 {
 	final static Logger logger = LoggerFactory.getLogger(CmdCall.class);
 
+
 	public static List<String> call(File workingDir, String... args)
+			throws IOException, InterruptedException
+	{
+		return call(true,workingDir,args);
+	}
+
+	public static List<String> call(boolean showFailures, File workingDir, String... args)
 			throws IOException, InterruptedException
 	{
 		List<String> output = new Vector<>();
@@ -28,25 +35,29 @@ public class CmdCall
 		logger.trace("Executing '{}' in {}", String.join(" ", args), workingDir.getAbsolutePath());
 		Process p = pb.start();
 
-		Thread t = new Thread(() -> {
+		if(showFailures)
+		{
+			Thread t = new Thread(() ->
 			{
-				BufferedReader reader = new BufferedReader(new InputStreamReader(p.getErrorStream()));
-				String line = null;
-				try
 				{
-					while ((line = reader.readLine()) != null)
+					BufferedReader reader = new BufferedReader(new InputStreamReader(p.getErrorStream()));
+					String line = null;
+					try
 					{
-						System.err.println(line);
+						while ((line = reader.readLine()) != null)
+						{
+							System.err.println(line);
+						}
+					} catch (IOException e)
+					{
+						e.printStackTrace();
 					}
-				} catch (IOException e)
-				{
-					e.printStackTrace();
 				}
-			}
 
-		});
-		t.setDaemon(true);
-		t.start();
+			});
+			t.setDaemon(true);
+			t.start();
+		}
 
 		BufferedReader readerOut = new BufferedReader(new InputStreamReader(p.getInputStream()));
 		String lineOut;
@@ -55,15 +66,16 @@ public class CmdCall
 			output.add(lineOut);
 		}
 
-		if (p.waitFor() == 0)
+		if (p.waitFor() != 0)
 		{
-		} else
-		{
-			BufferedReader reader = new BufferedReader(new InputStreamReader(p.getErrorStream()));
-			String line;
-			while ((line = reader.readLine()) != null)
+			if(showFailures)
 			{
-				System.err.println(line);
+				BufferedReader reader = new BufferedReader(new InputStreamReader(p.getErrorStream()));
+				String line;
+				while ((line = reader.readLine()) != null)
+				{
+					System.err.println(line);
+				}
 			}
 			return null;
 		}

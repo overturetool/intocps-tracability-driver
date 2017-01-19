@@ -11,6 +11,16 @@ import java.util.Map;
  */
 public interface IGitRepo
 {
+	class CommitPathPair{
+		final String commitId;
+		final String path;
+
+		public CommitPathPair(String commitId, String path)
+		{
+			this.commitId = commitId;
+			this.path = path;
+		}
+	}
 	String getCommitMessage(IGitRepoContext ctxt) throws IOException,
 			InterruptedException;
 
@@ -39,7 +49,7 @@ public interface IGitRepo
 	Date getGitCommitDate(IGitRepoContext ctxt) throws IOException,
 			InterruptedException, ParseException;
 
-	String getPreviousCommitId(IGitRepoContext repoCtxt, String path)
+	CommitPathPair getPreviousCommitId(IGitRepoContext repoCtxt, String path)
 			throws IOException, InterruptedException;
 
 	List<String> getCommitHistory(String commit) throws IOException,

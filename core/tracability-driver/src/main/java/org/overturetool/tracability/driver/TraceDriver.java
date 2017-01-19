@@ -187,10 +187,10 @@ public class TraceDriver
 	{
 		IntoTraceProtocol.ITMessage importExportMsg = null;
 		List<String> traces = null;
-		String previousCommit = cmdGit.getPreviousCommitId(gitCtxt, file);
+		IGitRepo.CommitPathPair previousCommit = cmdGit.getPreviousCommitId(gitCtxt, file);
 		if (previousCommit != null)
 		{
-			List<String> diff = cmdGit.getDiff(gitCtxt, previousCommit, file);
+			List<String> diff = cmdGit.getDiff(gitCtxt, previousCommit.commitId, file);
 			traces = diff.stream().filter(l -> l.startsWith("+--##\tIMPORT")
 					|| l.startsWith("+--##\tEXPORT")).collect(Collectors.toList());
 		} else
