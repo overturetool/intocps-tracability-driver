@@ -28,23 +28,24 @@ public class Main
 		{
 			if (!cmd.hasOption(option.getOpt()))
 			{
-				System.err.println("Missing required option: "
-						+ option.getOpt());
+				System.err.println(
+						"Missing required option: " + option.getOpt());
 				return false;
 			}
 		}
 		return true;
 	}
 
-	public static void main(String[] args) throws IOException,
-			InterruptedException, SAXException, ParserConfigurationException,
-			GitAPIException, JSONException, java.text.ParseException
+	public static void main(String[] args)
+			throws IOException, InterruptedException, SAXException,
+			ParserConfigurationException, GitAPIException, JSONException,
+			java.text.ParseException
 	{
 		Options options = new Options();
 		Option helpOpt = Option.builder("h").longOpt("help").desc("Show this description").build();
 
 		Option repoPathOpt = Option.builder("repo").longOpt("git-repo-path").desc("A bath to the repo root").hasArg().required().build();
-		Option commitOpt = Option.builder("c").longOpt("commit").desc("A commit SHAR1 or branch id").hasArg().required().build();
+		Option commitOpt = Option.builder("c").longOpt("commit").desc("A commit SHAR1 or branch id. Defaults to HEAD").hasArg().build();
 
 		Option schemeOpt = Option.builder("scheme").hasArg().numberOfArgs(1).argName("github> or <gitlab> or <intocps>").desc("Specify the URL scheme to use.").build();
 
@@ -116,8 +117,8 @@ public class Main
 				schemeType = UrlScheme.SchemeType.valueOf(scheme);
 			} catch (Exception e)
 			{
-				System.err.println("Scheme " + scheme
-						+ " is not a valid scheme");
+				System.err.println(
+						"Scheme " + scheme + " is not a valid scheme");
 				return;
 			}
 		}
@@ -137,7 +138,12 @@ public class Main
 		}
 
 		File repoUri = new File(cmd.getOptionValue(repoPathOpt.getOpt()));
-		String commit = cmd.getOptionValue(commitOpt.getOpt());
+		String commit = "HEAD";
+
+		if (cmd.hasOption(commitOpt.getOpt()))
+		{
+			commit = cmd.getOptionValue(commitOpt.getOpt());
+		}
 
 		TraceDriver deriver = new TraceDriver(dryRun, hostUrl, schemeType, Arrays.asList(cmd.getOptionValue(excludePathPrefixOpt.getOpt())), vdmOnly);
 		if (cmd.hasOption(syncOpt.getOpt()))
