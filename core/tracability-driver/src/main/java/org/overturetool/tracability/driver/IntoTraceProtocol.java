@@ -5,14 +5,9 @@ package org.overturetool.tracability.driver;
  */
 
 import java.io.IOException;
+import java.text.DateFormat;
 import java.text.SimpleDateFormat;
-import java.util.Arrays;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
-import java.util.Vector;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Function;
 import java.util.function.Predicate;
@@ -260,7 +255,9 @@ public class IntoTraceProtocol
 	{
 		JSONObject obj = new JSONObject();
 
-		SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd-hh-mm-ss");
+		TimeZone tz = TimeZone.getTimeZone("UTC");
+		DateFormat formatter = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssXXX"); // Quoted "Z" to indicate UTC, no timezone offset
+		formatter.setTimeZone(tz);
 
 		String time = formatter.format(date);
 		obj.put(rdf_about, getId(Prov.Activity, activityName, time));
