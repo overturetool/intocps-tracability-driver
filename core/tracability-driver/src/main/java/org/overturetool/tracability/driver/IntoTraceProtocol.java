@@ -141,7 +141,7 @@ public class IntoTraceProtocol
 
 		IntoCps(String name)
 		{
-			this.name = /*"intocps:" +*/ name;
+			this.name = "intocps:" + name;
 		}
 	}
 
