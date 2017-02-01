@@ -119,7 +119,7 @@ public class CmdGitRepo implements IGitRepo
 				final String rawGithubUrl = "https://raw.githubusercontent.com/%s/%s/%s/%s";
 				// https://raw.githubusercontent.com/into-cps/case-study_single_watertank/1845462e5842b9f9ee01d528599c6be178e84cad/.project.json
 				// https://github.com/overturetool/vdm2c/blob/18c8de3d9302410a9f152bca05b8ea553ef6e890/c/pom.xml
-				if (remote == null || !remote.contains("github.com:"))
+				if (remote == null || !remote.contains("github.com"))
 				{
 					logger.error("The github scheme: '{}' cannot not be used with remote: {}", repoCtxt.getUrlScheme(), remote);
 					repoCtxt.setScheme(UrlScheme.SchemeType.custom);
@@ -127,8 +127,16 @@ public class CmdGitRepo implements IGitRepo
 					return getUri(repoCtxt, path);
 				}
 
-				String user = remote.substring(
-						remote.indexOf("github.com:") + 11);
+				String user;
+
+				if (remote.contains("github.com:"))
+				{
+					user = remote.substring(remote.indexOf("github.com:") + 11);
+				} else
+				{
+					user = remote.substring(remote.indexOf("github.com/") + 11);
+				}
+
 				String repo = user.substring(user.indexOf("/") + 1);
 
 				user = user.substring(0, user.indexOf("/"));
@@ -210,7 +218,7 @@ public class CmdGitRepo implements IGitRepo
 	{
 		List<String> strings = CmdCall.call(repoPath, "git", "--no-pager", "log", "-n", "1", "--pretty=format:%cd", "--date=format:%Y-%m-%d %H:%M:%S", ctxt.getCommit());
 
-		DateFormat df = new SimpleDateFormat("yyyy-dd-MM HH:mm:ss");
+		DateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 		Date date = df.parse(strings.get(0));
 
 		return date;
@@ -221,7 +229,7 @@ public class CmdGitRepo implements IGitRepo
 			throws IOException, InterruptedException
 	{
 		//List<String> refs = CmdCall.call(repoPath, "git", "rev-list", repoCtxt.getCommit(), "--", path);
-		List<String> refs = CmdCall.call(repoPath, "git", "log", "--follow", "--name-status", "--pretty=format:H %H","-n","2", repoCtxt.getCommit(), "--", path);
+		List<String> refs = CmdCall.call(repoPath, "git", "log", "--follow", "--name-status", "--pretty=format:H %H", "-n", "2", repoCtxt.getCommit(), "--", path);
 		if (refs.size() > 4)
 		{
 			Iterator<String> itr = refs.iterator();
@@ -235,19 +243,18 @@ public class CmdGitRepo implements IGitRepo
 				{
 
 					hash = line.substring(2);
-					newPath=null;
+					newPath = null;
 
 				} else if (line.startsWith("R100"))
 				{
 					newPath = line.split("\t")[2];
-				}else if (line.startsWith("M")||line.startsWith("A"))
+				} else if (line.startsWith("M") || line.startsWith("A"))
 				{
 					newPath = line.split("\t")[1];
 				}
 			}
 
-			return new CommitPathPair(hash,
-					newPath == null ? path : newPath);
+			return new CommitPathPair(hash, newPath == null ? path : newPath);
 		} else
 		{
 			return null;
