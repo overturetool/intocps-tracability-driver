@@ -2,13 +2,13 @@
 	<modelVersion>4.0.0</modelVersion>
 
 	<parent>
-		<groupId>org.overturetool.tracability</groupId>
+		<groupId>org.overturetool.tracebility</groupId>
 		<artifactId>core</artifactId>
 		<version>0.0.7-SNAPSHOT</version>
 	</parent>
 
-	<groupId>org.overturetool.tracability.core</groupId>
-	<artifactId>tracability-driver</artifactId>
+	<groupId>org.overturetool.tracebility.core</groupId>
+	<artifactId>tracebility-driver</artifactId>
 	<name>Tracability driver for INTO-CPS</name>
 
 <build>

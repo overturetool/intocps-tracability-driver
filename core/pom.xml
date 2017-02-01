@@ -2,7 +2,7 @@
   <modelVersion>4.0.0</modelVersion>
 
   <parent>
-		<groupId>org.overturetool.tracability</groupId>
+		<groupId>org.overturetool.tracebility</groupId>
 		<artifactId>root</artifactId>
     <version>0.0.7-SNAPSHOT</version>
     <relativePath>../pom.xml</relativePath>
@@ -13,7 +13,7 @@
   <name>Core Tools</name>
 
   <modules>
-    <module>tracability-driver</module>
+    <module>tracebility-driver</module>
   </modules>
 
 	<dependencies>
