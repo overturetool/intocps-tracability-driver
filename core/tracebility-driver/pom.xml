@@ -4,7 +4,7 @@
 	<parent>
 		<groupId>org.overturetool.tracebility</groupId>
 		<artifactId>core</artifactId>
-		<version>0.1.0</version>
+		<version>0.1.1-SNAPSHOT</version>
 	</parent>
 
 	<groupId>org.overturetool.tracebility.core</groupId>
