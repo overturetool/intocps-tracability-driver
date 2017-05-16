@@ -52,7 +52,10 @@ public class WebClient
 
 				String responseString = EntityUtils.toString(entity, "UTF-8");
 
-				System.out.println(responseString);
+				if (response.getStatusLine().getStatusCode() != 200)
+					System.err.println(responseString);
+				else
+					System.out.println(responseString);
 
 			}
 

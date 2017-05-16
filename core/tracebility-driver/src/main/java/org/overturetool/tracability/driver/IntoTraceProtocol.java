@@ -141,17 +141,19 @@ public class IntoTraceProtocol
 
 		IntoCps(String name)
 		{
-			this.name = "intocps:" + name;
+			this.name =  name;
 		}
 	}
 
 	public enum IntoCpsTypes
 	{
-		SoftwareTool("softwareTool"),
+		SoftwareTool("Simulation Tool"),
 
-		Activity("activity"),
+		Activity("simulationModelling"),
 
-		Source("source"),
+//		Source("source"),
+
+		File("file"),
 
 		Fmu("fmu"),
 
@@ -161,7 +163,7 @@ public class IntoTraceProtocol
 
 		IntoCpsTypes(String name)
 		{
-			this.name = "intocps:" + name;
+			this.name =  name;
 		}
 	}
 
@@ -178,8 +180,8 @@ public class IntoTraceProtocol
 
 		body.put("xmlns:rdf", "http://www.w3.org/1999/02/22-rdf-syntax-ns#");
 		body.put("xmlns:prov", "http://www.w3.org/ns/prov#");
-		body.put("xmlns:intocps", "http://www.w3.org/ns/intocps#");
-		body.put("messageFormatVersion", "0.2");
+		//body.put("xmlns:intocps", "http://www.w3.org/ns/intocps#");
+		body.put("messageFormatVersion", "1.3");
 
 		for (Map.Entry<Prov, List<JSONObject>> entry : msg.data.entrySet())
 		{
@@ -217,6 +219,18 @@ public class IntoTraceProtocol
 		return root;
 	}
 
+	static JSONArray mkArray(Object... item)
+	{
+		JSONArray derivedList = new JSONArray();
+
+		for (Object o : item)
+		{
+			derivedList.put(o);
+		}
+
+		return derivedList;
+	}
+
 	public static ITMessage createAgent(IGitRepoContext repoCtxt, IGitRepo repo)
 			throws IOException, InterruptedException, JSONException
 	{
@@ -230,7 +244,7 @@ public class IntoTraceProtocol
 	{
 		JSONObject obj = new JSONObject();
 
-		obj.put(rdf_about, getId(Prov.Agent, name.replace(' ', '_')));
+		obj.put(rdf_about, getId(Prov.Agent, email.replace(' ', '_')));
 		obj.put(IntoCps.Name.name, name);
 		obj.put(IntoCps.Email.name, email);
 
@@ -268,7 +282,7 @@ public class IntoTraceProtocol
 			obj.put(Prov.WasAssociatedWith.name, mkObject(Prov.Agent.name, mkObject(rdf_about, agentId)));
 		}
 
-		obj.put(Prov.Used.name, mkObject(Prov.Entity.name, mkObject(rdf_about, toolMsg.getCurrentId())));
+		obj.put(Prov.Used.name, mkObject(Prov.Entity.name, mkArray(mkObject(rdf_about, toolMsg.getCurrentId()))));
 
 		ITMessage msg = new ITMessage(Prov.Activity, obj);
 		msg.merge(toolMsg);
@@ -301,7 +315,7 @@ public class IntoTraceProtocol
 				return String.format("Agent:%s", args[0]);
 			case Activity:
 				// Activity.<activity type>:<time in format yyyy-mm-dd-hh-mm-ss>#
-				return String.format("Activity.%s:%s:%s", args[0], args[1], UUID.randomUUID());
+				return String.format("Activity.%s:%s#%s", args[0], args[1], UUID.randomUUID());
 			case WasDerivedFrom:
 				break;
 			case HasMember:
@@ -342,7 +356,7 @@ public class IntoTraceProtocol
 		obj.put(IntoCps.Hash.name, repo.getGitCheckSum(repoCtxt, path));
 		obj.put(IntoCps.Commit.name, repoCtxt.getCommit());
 		obj.put(IntoCps.Comment.name, repo.getCommitMessage(repoCtxt));
-		obj.put(IntoCps.Type.name, IntoCpsTypes.Source.name);
+		obj.put(IntoCps.Type.name, IntoCpsTypes.File.name);
 
 		ITMessage map = new ITMessage(Prov.Entity, obj);
 		ITMessage authorObject = createAgent(repoCtxt, repo);
@@ -406,7 +420,7 @@ public class IntoTraceProtocol
 		JSONObject obj = new JSONObject();
 		obj.put(rdf_about, getId(Prov.Entity, name, hash));
 		obj.put(IntoCps.Hash.name, hash);
-		obj.put(IntoCps.Type.name, IntoCpsTypes.Source.name);
+		obj.put(IntoCps.Type.name, IntoCpsTypes.File.name);
 
 		return new ITMessage(Prov.Entity, obj);
 	}
