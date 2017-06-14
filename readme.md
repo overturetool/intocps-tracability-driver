@@ -6,13 +6,13 @@
 To run a full repo sync use the following command:
 
 ```bash
-java -jar tracability-driver-*-jar-with-dependencies.jar -s  --dry-run -vdm -exclude SysML -repo /path/to/repo
+java -jar tracability-driver-*-jar-with-dependencies.jar -host http://localhost:8083 -s  --dry-run -vdm -exclude SysML -repo /path/to/repo
 ```
 
 or to sync a single commit only:
 
 ```bash
-java -jar tracability-driver-*-jar-with-dependencies.jar -c <commit-hash> --dry-run -vdm -exclude SysML -repo /path/to/repo
+java -jar tracability-driver-*-jar-with-dependencies.jar -host http://localhost:8083 -c <commit-hash> --dry-run -vdm -exclude SysML -repo /path/to/repo
 ```
 
 The `--dry-run` command makes the tool only print the data that would be send. Drop this so send the messages. If a custom host is used then specify `-host <url>` to override the default host URL.
