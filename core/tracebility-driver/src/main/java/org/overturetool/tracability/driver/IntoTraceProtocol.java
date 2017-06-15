@@ -385,9 +385,8 @@ public class IntoTraceProtocol
 			JSONObject pObj = new JSONObject();
 			pObj.put(rdf_about, getId(Prov.Entity, previousCommit.path, repo.getGitCheckSum(repoCtxt.changeCommit(previousCommit.commitId), previousCommit.path)));
 
-			derivedList.put(mkObject(Prov.Entity.name, pObj));
 
-			obj.put(Prov.WasDerivedFrom.name, derivedList);
+			obj.put(Prov.WasDerivedFrom.name, mkObject(Prov.Entity.name,mkArray( pObj)));
 		}
 
 		List<JSONObject> children = structureProvider.getChildren(repoCtxt, path, obj);
