@@ -265,7 +265,7 @@ public class TraceDriver
 						{
 							IntoTraceProtocol.ITMessage msg = IntoTraceProtocol.createBasicEntity(fileName, hash);
 							msg.getCurrent().put(IntoTraceProtocol.IntoCps.Type.name, IntoTraceProtocol.IntoCpsTypes.Fmu.name);
-							msg.getCurrent().put(IntoTraceProtocol.IntoCps.Path.name, "?");
+							msg.getCurrent().put(IntoTraceProtocol.IntoCps.Path.name, fileName);
 							importExportMsg.merge(msg);
 
 							IntoTraceProtocol.ITMessage activity = IntoTraceProtocol.createActivity(agentId, IntoTraceProtocol.ACTIVITY_FMU_EXPORT, date, toolMsg);
