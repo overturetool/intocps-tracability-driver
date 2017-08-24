@@ -23,7 +23,7 @@ node {
       withMaven(mavenLocalRepo: '.repository', mavenSettingsFilePath: "${env.MVN_SETTINGS_PATH}") {
 
         // Run the maven build
-				sh "mvn install -Pall-platforms -PWith-IDE -Pcodesigning"
+				sh "mvn install -Pcodesigning"
 				step([$class: 'ArtifactArchiver', artifacts: '**/target/*.jar', fingerprint: true])
         step([$class: 'JUnitResultArchiver', testResults: '**/target/surefire-reports/TEST-*.xml'])
         step([$class: 'JacocoPublisher'])
