@@ -46,25 +46,25 @@ public class TraceDriver
 		this.vdmOnly = vdmOnly;
 	}
 
-	public void sync(File repoUri, String commitId,
+	public String sync(File repoUri, String commitId,
 			UrlScheme.SchemeType scheme, boolean vdmSubModulesInclude,
 			String commit) throws IOException, GitAPIException, JSONException,
 			ParseException
 	{
-		internalSync(repoUri, commitId, scheme, vdmSubModulesInclude, Arrays.asList(commit));
+		return internalSync(repoUri, commitId, scheme, vdmSubModulesInclude, Arrays.asList(commit));
 	}
 
-	public void sync(File repoUri, String commitId,
+	public String sync(File repoUri, String commitId,
 			UrlScheme.SchemeType scheme, boolean vdmSubModulesInclude)
 			throws IOException, GitAPIException, JSONException, ParseException,
 			InterruptedException
 	{
 		final IGitRepo cmdGit = new CmdGitRepo(repoUri);
 		List<String> refs = cmdGit.getCommitHistory(commitId);
-		internalSync(repoUri, commitId, scheme, vdmSubModulesInclude, refs);
+		return internalSync(repoUri, commitId, scheme, vdmSubModulesInclude, refs);
 	}
 
-	private void internalSync(File repoUri, String commitId,
+	private String internalSync(File repoUri, String commitId,
 			UrlScheme.SchemeType scheme, boolean vdmSubModulesInclude,
 			List<String> commits) throws IOException, GitAPIException,
 			JSONException, ParseException
@@ -172,9 +172,11 @@ public class TraceDriver
 			{
 				WebClient.post(hostUrl + "/traces/push/json", message);
 			}
+			return message;
 		} catch (InterruptedException e)
 		{
 			e.printStackTrace();
+			return null;
 		}
 
 	}

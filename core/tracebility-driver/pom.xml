@@ -123,6 +123,29 @@
         <artifactId>slf4j-log4j12</artifactId>
         </dependency>
 
+
+		<!-- https://mvnrepository.com/artifact/com.github.fge/json-schema-validator -->
+		<dependency>
+			<groupId>com.github.fge</groupId>
+			<artifactId>json-schema-validator</artifactId>
+			<version>2.2.6</version>
+			<scope>test</scope>
+		</dependency>
+		<!-- https://mvnrepository.com/artifact/com.github.fge/jackson-coreutils -->
+		<dependency>
+			<groupId>com.github.fge</groupId>
+			<artifactId>jackson-coreutils</artifactId>
+			<version>1.8</version>
+			<scope>test</scope>
+		</dependency>
+		<!-- https://mvnrepository.com/artifact/com.github.fge/json-schema-core -->
+		<dependency>
+			<groupId>com.github.fge</groupId>
+			<artifactId>json-schema-core</artifactId>
+			<version>1.2.5</version>
+			<scope>test</scope>
+		</dependency>
+
     </dependencies>
 
 </project>

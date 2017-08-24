@@ -1,0 +1,9 @@
+[submodule "core/tracebility-driver/src/test/resources/case-study_single_watertank"]
+	path = core/tracebility-driver/src/test/resources/case-study_single_watertank
+	url = https://github.com/into-cps/case-study_single_watertank.git
+[submodule "core/tracebility-driver/src/test/resources/case-study_line_follower_robot"]
+	path = core/tracebility-driver/src/test/resources/case-study_line_follower_robot
+	url = https://github.com/into-cps/case-study_line_follower_robot.git
+[submodule "core/tracebility-driver/src/test/resources/case-study_fcu"]
+	path = core/tracebility-driver/src/test/resources/case-study_fcu
+	url = https://github.com/into-cps/case-study_fcu.git

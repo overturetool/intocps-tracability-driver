@@ -181,7 +181,7 @@ public class IntoTraceProtocol
 		body.put("xmlns:rdf", "http://www.w3.org/1999/02/22-rdf-syntax-ns#");
 		body.put("xmlns:prov", "http://www.w3.org/ns/prov#");
 		//body.put("xmlns:intocps", "http://www.w3.org/ns/intocps#");
-		body.put("messageFormatVersion", "1.3");
+		body.put("messageFormatVersion", "1.3.2");
 
 		for (Map.Entry<Prov, List<JSONObject>> entry : msg.data.entrySet())
 		{

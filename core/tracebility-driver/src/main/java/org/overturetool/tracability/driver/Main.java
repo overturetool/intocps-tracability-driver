@@ -15,6 +15,7 @@ import org.apache.commons.cli.HelpFormatter;
 import org.apache.commons.cli.Option;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
+import org.apache.commons.io.FileUtils;
 import org.apache.sling.commons.json.JSONException;
 import org.eclipse.jgit.api.errors.GitAPIException;
 import org.xml.sax.SAXException;
@@ -61,6 +62,7 @@ public class Main
 
 		Option vdmOnlyOpt = Option.builder("vdm").desc("Only consider VDM files (*.vdmsl, *.vdmsl, *.vdmrt)").build();
 		Option vdmSubModulesOpt = Option.builder("sub").longOpt("submodules").desc("Include submodules").build();
+		Option storeOpt = Option.builder("store").hasArg().numberOfArgs(1).argName("path").desc("Store the message with the given path").build();
 
 		options.addOption(helpOpt);
 		options.addOption(repoPathOpt);
@@ -71,6 +73,7 @@ public class Main
 		options.addOption(excludePathPrefixOpt);
 		options.addOption(vdmSubModulesOpt);
 		options.addOption(hostOpt);
+		options.addOption(storeOpt);
 
 		options.addOption(verboseOpt);
 		options.addOption(forceOpt);
@@ -146,15 +149,26 @@ public class Main
 		}
 
 		TraceDriver deriver = new TraceDriver(dryRun, hostUrl, schemeType, Arrays.asList(cmd.getOptionValue(excludePathPrefixOpt.getOpt())), vdmOnly);
+		String message = null;
 		if (cmd.hasOption(syncOpt.getOpt()))
 		{
 			// perform full sync
-			deriver.sync(repoUri, commit, schemeType, vdmSubModulesInclude);
+			message = deriver.sync(repoUri, commit, schemeType, vdmSubModulesInclude);
 		} else if (cmd.hasOption(commitOpt.getOpt()))
 		{
-			deriver.sync(repoUri, commit, schemeType, vdmSubModulesInclude, commit);
+		message=	deriver.sync(repoUri, commit, schemeType, vdmSubModulesInclude, commit);
 		}
 
+		if(cmd.hasOption(storeOpt.getOpt()))
+		{
+			store(message,cmd.getOptionValue(storeOpt.getOpt()));
+		}
+
+	}
+
+	private static void store(String message, String path) throws IOException
+	{
+		FileUtils.write(new File(path),message);
 	}
 
 	private static void showVersion()
