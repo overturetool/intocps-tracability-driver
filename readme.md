@@ -37,3 +37,10 @@ chmod +x .git/hooks/post-commit
 ```
 
 This will trigger a sync of the new commit to the daemon.
+
+## Release the tool
+
+```bash
+mvn -Dmaven.repo.local=repository release:clean
+mvn -Dmaven.repo.local=repository release:prepare -DreleaseVersion=${RELEASE_VER} -DdevelopmentVersion=${NEW_DEV_VER}
+mvn -Dmaven.repo.local=repository release:perform
