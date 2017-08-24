@@ -16,7 +16,7 @@ node {
       withMaven(mavenLocalRepo: '.repository', mavenSettingsFilePath: "${env.MVN_SETTINGS_PATH}") {
 
         // Run the maven build
-				sh "mvn clean install -U -PWith-IDE -Pcodesigning"
+				sh "mvn clean install -U -Pcodesigning"
       }}
 
     stage ('Build'){
@@ -42,7 +42,7 @@ node {
 				def rtMaven = Artifactory.newMavenBuild()
 				rtMaven.tool = "Maven 3.3.3" // Tool name from Jenkins configuration
 				rtMaven.opts = "-Xmx1024m -XX:MaxPermSize=256M"
-				rtMaven.deployer releaseRepo:'overture-fmu', snapshotRepo:'overture-fmu', server: server
+				rtMaven.deployer releaseRepo:'into-cps', snapshotRepo:'into-cps', server: server
 				
 				rtMaven.run pom: 'pom.xml', goals: 'install', buildInfo: buildInfo
 
