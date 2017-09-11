@@ -24,9 +24,9 @@ public class IntoTraceProtocol
 	final static Logger logger = LoggerFactory.getLogger(IntoTraceProtocol.class);
 	public final static String rdf_about = "rdf:about";
 	public final static String SOFTWARETOOL = "softwareTool";
-	public final static String ACTIVITY_MODELLING = "modelling";
+	public final static String ACTIVITY_MODELLING = "modelModification";
 	public static final String ACTIVITY_MODEL_DESCRIPTION_IMPORT = "modelDescriptionImport";
-	public static final String ACTIVITY_FMU_EXPORT = "fmu_export";
+	public static final String ACTIVITY_FMU_EXPORT = "fmuExport";
 
 	public static class ITMessage
 	{
@@ -181,7 +181,7 @@ public class IntoTraceProtocol
 		body.put("xmlns:rdf", "http://www.w3.org/1999/02/22-rdf-syntax-ns#");
 		body.put("xmlns:prov", "http://www.w3.org/ns/prov#");
 		//body.put("xmlns:intocps", "http://www.w3.org/ns/intocps#");
-		body.put("messageFormatVersion", "1.3.2");
+		body.put("messageFormatVersion", "1.4");
 
 		for (Map.Entry<Prov, List<JSONObject>> entry : msg.data.entrySet())
 		{
@@ -304,11 +304,11 @@ public class IntoTraceProtocol
 				if (args.length == 2)
 				{
 					// Entity.<entity type>:<git relative path>#<githash of the document>
-					return String.format("Entity.%s:%s#%s", "source", args[0], args[1]);
+					return String.format("Entity.%s:%s#%s", "file", args[0], args[1]);
 				} else if (args.length == 3)
 				{
 					// Entity.<entity type>:<git relative path>:<subpart name>#<githash of the document>
-					return String.format("Entity.%s:%s:%s#%s", "source", args[0], args[1], args[2]);
+					return String.format("Entity.%s:%s:%s#%s", "file", args[0], args[1], args[2]);
 				}
 			case Agent:
 				// Agent:<unique username>

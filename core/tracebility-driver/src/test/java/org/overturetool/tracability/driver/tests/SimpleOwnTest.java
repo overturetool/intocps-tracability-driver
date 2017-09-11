@@ -41,7 +41,7 @@ public class SimpleOwnTest
 				Paths.get("../../").toAbsolutePath().normalize().toString() ,"-store",resultPath.getAbsolutePath()});
 
 		Assert.assertTrue("Result file missing",resultPath.exists());
-		File schema = new File("src/test/resources/v1.3.2.json".replace("/", File.separator));
+		File schema = new File("src/test/resources/v1.4.json".replace("/", File.separator));
 		Assert.assertTrue("JSON Schema errors", ValidationUtils.isJsonValid(schema,resultPath));
 	}
 }
